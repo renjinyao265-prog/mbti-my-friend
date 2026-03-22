@@ -104,6 +104,125 @@
             letter-spacing: 8px;
         }
 
+        /* 星球信息面板 */
+        .planet-info-panel {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 100;
+            pointer-events: auto;
+            background: rgba(255,255,255,0.92);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-radius: 24px;
+            padding: 20px 30px;
+            max-width: 500px;
+            width: 90%;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            display: none;
+        }
+
+        .planet-info-panel.show {
+            display: block;
+            animation: slideUp 0.3s ease;
+        }
+
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateX(-50%) translateY(20px); }
+            to { opacity: 1; transform: translateX(-50%) translateY(0); }
+        }
+
+        .planet-info-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .planet-info-name {
+            font-size: 24px;
+            font-weight: 800;
+            color: #3a3a6a;
+        }
+
+        .planet-info-online {
+            background: linear-gradient(135deg, #60a0ff 0%, #4080e0 100%);
+            color: white;
+            padding: 6px 14px;
+            border-radius: 14px;
+            font-size: 13px;
+            font-weight: 600;
+        }
+
+        .planet-info-title {
+            color: #6080ff;
+            font-size: 15px;
+            margin-bottom: 12px;
+            font-weight: 600;
+        }
+
+        .planet-info-desc {
+            color: #5a5a7a;
+            font-size: 14px;
+            line-height: 1.8;
+            margin-bottom: 15px;
+        }
+
+        .mbti-info {
+            background: rgba(96, 160, 255, 0.1);
+            border-radius: 16px;
+            padding: 15px;
+            margin-bottom: 15px;
+        }
+
+        .mbti-info-title {
+            color: #4080e0;
+            font-size: 13px;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        .mbti-info-content {
+            color: #5a5a8a;
+            font-size: 13px;
+            line-height: 1.7;
+        }
+
+        .planet-info-enter {
+            width: 100%;
+            background: linear-gradient(135deg, #60a0ff 0%, #4080e0 100%);
+            color: white;
+            border: none;
+            padding: 14px;
+            border-radius: 16px;
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .planet-info-enter:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(64, 128, 224, 0.4);
+        }
+
+        .close-info-btn {
+            background: rgba(100,100,120,0.1);
+            border: none;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 18px;
+            color: #6a6a8a;
+            transition: all 0.3s ease;
+        }
+
+        .close-info-btn:hover {
+            background: rgba(100,100,120,0.2);
+        }
+
         /* 选择聊天室弹窗 */
         .modal-overlay {
             position: fixed;
@@ -233,6 +352,13 @@
                 padding: 10px 16px;
                 font-size: 13px;
             }
+            .planet-info-panel {
+                padding: 15px 20px;
+                bottom: 20px;
+            }
+            .planet-info-name {
+                font-size: 20px;
+            }
         }
     </style>
 </head>
@@ -255,6 +381,22 @@
         <div class="header">
             <h1>MBTI 交友大厅</h1>
         </div>
+    </div>
+
+    <!-- 星球信息面板 -->
+    <div class="planet-info-panel" id="planetInfoPanel">
+        <div class="planet-info-header">
+            <span class="planet-info-name" id="planetInfoName">INTJ</span>
+            <button class="close-info-btn" id="closeInfoBtn">✕</button>
+        </div>
+        <div class="planet-info-title" id="planetInfoTitle">战略家 · 暗核智慧</div>
+        <div class="planet-info-online" id="planetInfoOnline">👥 在线 0 人</div>
+        <div class="mbti-info">
+            <div class="mbti-info-title">性格特点</div>
+            <div class="mbti-info-content" id="planetInfoTraits">富有想象力和战略性的思想家，一切皆在计划之中。</div>
+        </div>
+        <div class="planet-info-desc" id="planetInfoDesc">INTJ 是独立的战略思考者，他们有着宏大的愿景和坚定的决心。他们善于分析复杂的问题，并制定长远的计划来实现目标。</div>
+        <button class="planet-info-enter" id="planetInfoEnter">进入聊天室</button>
     </div>
 
     <!-- 选择聊天室弹窗 -->
@@ -290,25 +432,68 @@
         let initialPinchDistance = 0, initialCameraZoom = 1;
         let raycaster, mouse;
         let selectedPlanet = null;
+        let hoveredPlanet = null;
 
         const planetsData = [
-            { type: 'INTJ', name: 'INTJ', title: '战略家 · 暗核智慧', color: 0x6b3fa0, size: 1.0 },
-            { type: 'INTP', name: 'INTP', title: '逻辑家 · 星尘脑洞', color: 0x80b0e0, size: 0.9 },
-            { type: 'ENTJ', name: 'ENTJ', title: '统帅 · 气场全开', color: 0xffb020, size: 1.1 },
-            { type: 'ENTP', name: 'ENTP', title: '辩论家 · 脑洞无限', color: 0xd0ff80, size: 0.9 },
-            { type: 'INFJ', name: 'INFJ', title: '洞察者 · 温柔共情', color: 0xffd0e0, size: 0.95 },
-            { type: 'INFP', name: 'INFP', title: '理想家 · 幻梦琉璃', color: 0xe0b0ff, size: 0.9 },
-            { type: 'ENFJ', name: 'ENFJ', title: '引导者 · 温暖包容', color: 0xa0d0ff, size: 1.0 },
-            { type: 'ENFP', name: 'ENFP', title: '逐梦者 · 热情向阳', color: 0xffb060, size: 1.05 },
-            { type: 'ISTJ', name: 'ISTJ', title: '检查者 · 青岩秩序', color: 0x507050, size: 1.0 },
-            { type: 'ESTJ', name: 'ESTJ', title: '管理者 · 规则至上', color: 0xa070e0, size: 1.05 },
-            { type: 'ISFJ', name: 'ISFJ', title: '守卫者 · 奶白守护', color: 0xf0e0c0, size: 0.95 },
-            { type: 'ESFJ', name: 'ESFJ', title: '执政官 · 暖心社交', color: 0xa0d0ff, size: 1.0 },
-            { type: 'ISTP', name: 'ISTP', title: '鉴赏家 · 银械工匠', color: 0x808090, size: 0.95 },
-            { type: 'ISFP', name: 'ISFP', title: '探险家 · 薄荷艺术', color: 0xb0f0d0, size: 0.9 },
-            { type: 'ESTP', name: 'ESTP', title: '企业家 · 赤焰冒险', color: 0xff6040, size: 1.0 },
-            { type: 'ESFP', name: 'ESFP', title: '表演者 · 派对中心', color: 0xff80c0, size: 1.1 }
+            { type: 'INTJ', name: 'INTJ', title: '战略家 · 暗核智慧', color: 0x6b3fa0, size: 1.0,
+              traits: '富有想象力和战略性的思想家，一切皆在计划之中。',
+              desc: 'INTJ 是独立的战略思考者，他们有着宏大的愿景和坚定的决心。他们善于分析复杂的问题，并制定长远的计划来实现目标。' },
+            { type: 'INTP', name: 'INTP', title: '逻辑家 · 星尘脑洞', color: 0x80b0e0, size: 0.9,
+              traits: '具有创造力的发明家，对知识有着止不住的渴望。',
+              desc: 'INTP 是逻辑思维的大师，他们对知识有着无限的渴望。他们喜欢分析理论，探索新想法，并以独特的视角看待世界。' },
+            { type: 'ENTJ', name: 'ENTJ', title: '统帅 · 气场全开', color: 0xffb020, size: 1.1,
+              traits: '大胆、富有想象力且意志强大的领导者。',
+              desc: 'ENTJ 是天生的领导者，他们有着强大的意志力和决断力。他们善于制定战略，并激励他人共同实现伟大的目标。' },
+            { type: 'ENTP', name: 'ENTP', title: '辩论家 · 脑洞无限', color: 0xd0ff80, size: 0.9,
+              traits: '聪明好奇的思想者，不会放弃任何智力上的挑战。',
+              desc: 'ENTP 是机智的辩论家，他们喜欢探索新想法，挑战现状。他们思维敏捷，能够从多个角度看待问题。' },
+            { type: 'INFJ', name: 'INFJ', title: '洞察者 · 温柔共情', color: 0xffd0e0, size: 0.95,
+              traits: '安静而神秘，同时鼓舞人心且不知疲倦的理想主义者。',
+              desc: 'INFJ 是富有洞察力的理想主义者，他们深刻理解他人的情感和需求。他们追求意义，希望为世界带来积极的改变。' },
+            { type: 'INFP', name: 'INFP', title: '理想家 · 幻梦琉璃', color: 0xe0b0ff, size: 0.9,
+              traits: '诗意、善良的利他主义者，总是热情地为正当理由提供帮助。',
+              desc: 'INFP 是浪漫的理想主义者，他们忠于自己的价值观，并渴望过上与内心一致的生活。他们富有同理心，善于理解他人。' },
+            { type: 'ENFJ', name: 'ENFJ', title: '引导者 · 温暖包容', color: 0xa0d0ff, size: 1.0,
+              traits: '富有魅力且鼓舞人心的领导者，有使听众着迷的能力。',
+              desc: 'ENFJ 是天生的教育家和激励者，他们善于理解他人并帮助他们发挥潜能。他们热情、有同情心，总是为他人着想。' },
+            { type: 'ENFP', name: 'ENFP', title: '逐梦者 · 热情向阳', color: 0xffb060, size: 1.05,
+              traits: '热情、有创造力、社交自由的人，总能找到微笑的理由。',
+              desc: 'ENFP 是充满热情的探索者，他们对生活充满好奇，喜欢探索可能性。他们善于与人交往，能够激发他人的热情。' },
+            { type: 'ISTJ', name: 'ISTJ', title: '检查者 · 青岩秩序', color: 0x507050, size: 1.0,
+              traits: '实际且注重事实的个人，可靠性不容怀疑。',
+              desc: 'ISTJ 是可靠的组织者，他们重视传统和秩序。他们做事认真负责，注重细节，是值得信赖的伙伴。' },
+            { type: 'ESTJ', name: 'ESTJ', title: '管理者 · 规则至上', color: 0xa070e0, size: 1.05,
+              traits: '出色的管理者，在管理事情或人的方面无与伦比。',
+              desc: 'ESTJ 是天生的组织者，他们喜欢建立秩序并确保事情顺利进行。他们务实、果断，善于管理团队和项目。' },
+            { type: 'ISFJ', name: 'ISFJ', title: '守卫者 · 奶白守护', color: 0xf0e0c0, size: 0.95,
+              traits: '非常专注而温暖的守护者，时刻准备保护所爱之人。',
+              desc: 'ISFJ 是温暖的守护者，他们关心他人，乐于奉献。他们重视和谐，善于创造温馨的环境。' },
+            { type: 'ESFJ', name: 'ESFJ', title: '执政官 · 暖心社交', color: 0xa0d0ff, size: 1.0,
+              traits: '极有同情心、爱社交、受欢迎的人，总是热心帮助他人。',
+              desc: 'ESFJ 是热心的社交者，他们喜欢与人交往，关心他人的感受。他们善于组织活动，创造和谐的氛围。' },
+            { type: 'ISTP', name: 'ISTP', title: '鉴赏家 · 银械工匠', color: 0x808090, size: 0.95,
+              traits: '大胆而实际的实验家，擅长使用任何形式的工具。',
+              desc: 'ISTP 是灵活的实干家，他们善于动手解决问题。他们思维敏捷，能够快速适应新情况。' },
+            { type: 'ISFP', name: 'ISFP', title: '探险家 · 薄荷艺术', color: 0xb0f0d0, size: 0.9,
+              traits: '灵活有魅力的艺术家，时刻准备探索和体验新鲜事物。',
+              desc: 'ISFP 是温和的艺术家，他们活在当下，享受生活中的美好。他们敏感、善良，善于用艺术表达自己。' },
+            { type: 'ESTP', name: 'ESTP', title: '企业家 · 赤焰冒险', color: 0xff6040, size: 1.0,
+              traits: '聪明、精力充沛、善于感知的人，享受冒险和即兴发挥。',
+              desc: 'ESTP 是充满活力的行动者，他们喜欢冒险，活在当下。他们善于观察，能够快速做出反应。' },
+            { type: 'ESFP', name: 'ESFP', title: '表演者 · 派对中心', color: 0xff80c0, size: 1.1,
+              traits: '自发、精力充沛而热情的表演者，生活在他们周围永不无聊。',
+              desc: 'ESFP 是热情的表演者，他们喜欢成为焦点，给他人带来快乐。他们善于观察，能够敏锐地感知他人的情绪。' }
         ];
+
+        // 获取在线人数（从 localStorage 读取注册账号数）
+        function getOnlineCount(mbtiType) {
+            try {
+                const accounts = JSON.parse(localStorage.getItem('mbtiAccounts') || '[]');
+                return accounts.length;
+            } catch (e) {
+                return 0;
+            }
+        }
 
         function initThree() {
             const container = document.getElementById('canvas-container');
@@ -425,6 +610,12 @@
                 planet.position.z = Math.sin(planet.userData.angle) * 8;
                 planet.position.y = planet.userData.originalY + Math.sin(time * 1.5 + i) * 0.5;
                 planet.rotation.y += 0.01;
+
+                if (hoveredPlanet === planet) {
+                    planet.scale.setScalar(1.2);
+                } else {
+                    planet.scale.setScalar(1);
+                }
             });
 
             if (particles) {
@@ -463,6 +654,30 @@
         }
 
         function onMouseMove(e) {
+            if (!isDragging || isPinching) {
+                mouse.x = (e.clientX / window.innerWidth) * 2 - 1;
+                mouse.y = -(e.clientY / window.innerHeight) * 2 + 1;
+                raycaster.setFromCamera(mouse, camera);
+                const intersects = raycaster.intersectObjects(planets);
+
+                if (intersects.length > 0) {
+                    let planet = intersects[0].object;
+                    while (planet.parent && planet.parent !== scene && !planet.userData.data) {
+                        planet = planet.parent;
+                    }
+                    if (planet.userData && planet.userData.data) {
+                        hoveredPlanet = planet;
+                        document.body.style.cursor = 'pointer';
+                    } else {
+                        hoveredPlanet = null;
+                        document.body.style.cursor = 'default';
+                    }
+                } else {
+                    hoveredPlanet = null;
+                    document.body.style.cursor = 'default';
+                }
+            }
+
             if (!isDragging || isPinching) return;
 
             const deltaX = (e.clientX - lastMouseX) * 0.03 / cameraZoom;
@@ -521,20 +736,37 @@
             const intersects = raycaster.intersectObjects(planets);
 
             if (intersects.length > 0) {
-                const planet = intersects[0].object;
-                while (planet.parent && planet.parent !== scene) {
-                    planet.parent.userData.data && (planet.userData = planet.parent.userData);
-                    planet.parent.userData.data && (planet = planet.parent);
+                let planet = intersects[0].object;
+                while (planet.parent && planet.parent !== scene && !planet.userData.data) {
+                    planet = planet.parent;
                 }
                 if (planet.userData && planet.userData.data) {
-                    openModal(planet.userData.data);
+                    showPlanetInfo(planet.userData.data);
                 }
             }
         }
 
-        function openModal(planetData) {
+        function showPlanetInfo(planetData) {
             selectedPlanet = planetData;
-            document.getElementById('modalPlanetName').textContent = planetData.name + ' ' + planetData.title;
+            const onlineCount = getOnlineCount(planetData.type);
+
+            document.getElementById('planetInfoName').textContent = planetData.name;
+            document.getElementById('planetInfoTitle').textContent = planetData.title;
+            document.getElementById('planetInfoOnline').textContent = `👥 在线 ${onlineCount} 人`;
+            document.getElementById('planetInfoTraits').textContent = planetData.traits;
+            document.getElementById('planetInfoDesc').textContent = planetData.desc;
+
+            document.getElementById('planetInfoPanel').classList.add('show');
+        }
+
+        function hidePlanetInfo() {
+            document.getElementById('planetInfoPanel').classList.remove('show');
+        }
+
+        function openModal() {
+            if (!selectedPlanet) return;
+            hidePlanetInfo();
+            document.getElementById('modalPlanetName').textContent = selectedPlanet.name + ' ' + selectedPlanet.title;
             document.getElementById('modalOverlay').classList.add('show');
         }
 
@@ -561,6 +793,8 @@
                 closeModal();
             }
         });
+        document.getElementById('closeInfoBtn').addEventListener('click', hidePlanetInfo);
+        document.getElementById('planetInfoEnter').addEventListener('click', openModal);
 
         initThree();
     </script>
