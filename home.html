@@ -11,10 +11,16 @@
             box-sizing: border-box;
         }
 
+        html, body {
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+        }
+
         body {
             overflow: hidden;
             font-family: 'Microsoft YaHei', sans-serif;
-            padding-bottom: 80px;
+            touch-action: none;
         }
 
         /* 背景层 */
@@ -60,15 +66,58 @@
             letter-spacing: 8px;
         }
 
-        /* 星球容器 */
-        .planets-container {
+        /* 缩放控制 */
+        .zoom-controls {
+            position: fixed;
+            left: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            z-index: 100;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .zoom-btn {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.25);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.3);
+            color: white;
+            font-size: 20px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+        }
+
+        .zoom-btn:hover {
+            background: rgba(255,255,255,0.4);
+            transform: scale(1.1);
+        }
+
+        /* 星球容器 - 可缩放平移 */
+        .planets-wrapper {
             position: fixed;
             top: 0;
             left: 0;
             width: 100vw;
             height: 100vh;
             z-index: 10;
-            padding-bottom: 80px;
+            overflow: hidden;
+        }
+
+        .planets-container {
+            position: absolute;
+            width: 250vw;
+            height: 250vh;
+            top: -75vh;
+            left: -75vw;
+            transform-origin: center center;
+            transition: transform 0.1s ease-out;
         }
 
         /* 星球基础样式 */
@@ -82,48 +131,21 @@
             z-index: 50;
         }
 
-        /* 星球环绕文字 */
-        .planet-text-ring {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            width: 150px;
-            height: 150px;
-            pointer-events: none;
-            animation: text-rotate 20s infinite linear;
-        }
-
-        @keyframes text-rotate {
-            from { transform: translate(-50%, -50%) rotate(0deg); }
-            to { transform: translate(-50%, -50%) rotate(360deg); }
-        }
-
-        .planet-text-item {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform-origin: 0 0;
-            font-size: 11px;
-            color: rgba(255,255,255,0.9);
-            text-shadow: 0 0 8px rgba(0,0,0,0.8);
-            white-space: nowrap;
-            font-weight: 600;
-        }
-
-        /* 星球标签 */
         .planet-label {
             position: absolute;
-            bottom: -40px;
+            bottom: -45px;
             left: 50%;
             transform: translateX(-50%);
             white-space: nowrap;
             color: #fff;
-            font-size: 14px;
+            font-size: 13px;
             text-shadow: 0 0 10px rgba(0,0,0,0.8);
             opacity: 0;
             transition: opacity 0.3s ease;
             pointer-events: none;
+            background: rgba(0,0,0,0.3);
+            padding: 4px 10px;
+            border-radius: 10px;
         }
 
         .planet:hover .planet-label {
@@ -881,7 +903,15 @@
         <h1>MBTI 交友大厅</h1>
     </div>
 
-    <div class="planets-container" id="planetsContainer"></div>
+    <!-- 缩放控制 -->
+    <div class="zoom-controls">
+        <button class="zoom-btn" id="zoomIn">+</button>
+        <button class="zoom-btn" id="zoomOut">−</button>
+    </div>
+
+    <div class="planets-wrapper" id="planetsWrapper">
+        <div class="planets-container" id="planetsContainer"></div>
+    </div>
 
     <!-- 底部导航栏 -->
     <nav class="bottom-nav">
@@ -920,29 +950,32 @@
     </div>
 
     <script>
-        // 16型MBTI星球数据
         const planetsData = [
-            { type: 'intj', name: 'INTJ', title: '战略家 · 暗核智慧', feature: '高冷智慧' },
-            { type: 'intp', name: 'INTP', title: '逻辑家 · 星尘脑洞', feature: '脑洞大开' },
-            { type: 'entj', name: 'ENTJ', title: '统帅 · 气场全开', feature: '气场全开' },
-            { type: 'entp', name: 'ENTP', title: '辩论家 · 脑洞无限', feature: '脑洞无限' },
-            { type: 'infj', name: 'INFJ', title: '洞察者 · 温柔共情', feature: '温柔共情' },
-            { type: 'infp', name: 'INFP', title: '理想家 · 幻梦琉璃', feature: '浪漫敏感' },
-            { type: 'enfj', name: 'ENFJ', title: '引导者 · 温暖包容', feature: '温暖包容' },
-            { type: 'enfp', name: 'ENFP', title: '逐梦者 · 热情向阳', feature: '热情活泼' },
-            { type: 'istj', name: 'ISTJ', title: '检查者 · 青岩秩序', feature: '严谨可靠' },
-            { type: 'estj', name: 'ESTJ', title: '管理者 · 规则至上', feature: '规则至上' },
-            { type: 'isfj', name: 'ISFJ', title: '守卫者 · 奶白守护', feature: '温暖贴心' },
-            { type: 'esfj', name: 'ESFJ', title: '执政官 · 暖心社交', feature: '暖心社交' },
-            { type: 'istp', name: 'ISTP', title: '鉴赏家 · 银械工匠', feature: '酷感实干' },
-            { type: 'isfp', name: 'ISFP', title: '探险家 · 薄荷艺术', feature: '温柔审美' },
-            { type: 'estp', name: 'ESTP', title: '企业家 · 赤焰冒险', feature: '热血行动' },
-            { type: 'esfp', name: 'ESFP', title: '表演者 · 派对中心', feature: '派对中心' }
+            { type: 'intj', name: 'INTJ', title: '战略家 · 暗核智慧', x: 15, y: 15 },
+            { type: 'intp', name: 'INTP', title: '逻辑家 · 星尘脑洞', x: 70, y: 10 },
+            { type: 'entj', name: 'ENTJ', title: '统帅 · 气场全开', x: 40, y: 55 },
+            { type: 'entp', name: 'ENTP', title: '辩论家 · 脑洞无限', x: 85, y: 45 },
+            { type: 'infj', name: 'INFJ', title: '洞察者 · 温柔共情', x: 10, y: 75 },
+            { type: 'infp', name: 'INFP', title: '理想家 · 幻梦琉璃', x: 55, y: 80 },
+            { type: 'enfj', name: 'ENFJ', title: '引导者 · 温暖包容', x: 30, y: 35 },
+            { type: 'enfp', name: 'ENFP', title: '逐梦者 · 热情向阳', x: 75, y: 70 },
+            { type: 'istj', name: 'ISTJ', title: '检查者 · 青岩秩序', x: 20, y: 50 },
+            { type: 'estj', name: 'ESTJ', title: '管理者 · 规则至上', x: 60, y: 25 },
+            { type: 'isfj', name: 'ISFJ', title: '守卫者 · 奶白守护', x: 88, y: 25 },
+            { type: 'esfj', name: 'ESFJ', title: '执政官 · 暖心社交', x: 12, y: 35 },
+            { type: 'istp', name: 'ISTP', title: '鉴赏家 · 银械工匠', x: 50, y: 50 },
+            { type: 'isfp', name: 'ISFP', title: '探险家 · 薄荷艺术', x: 75, y: 35 },
+            { type: 'estp', name: 'ESTP', title: '企业家 · 赤焰冒险', x: 40, y: 85 },
+            { type: 'esfp', name: 'ESFP', title: '表演者 · 派对中心', x: 60, y: 65 }
         ];
 
         let selectedPlanet = null;
+        let scale = 1;
+        let translateX = 0;
+        let translateY = 0;
+        let isDragging = false;
+        let startX, startY;
 
-        // 获取在线人数
         function getOnlineCount() {
             try {
                 const accounts = JSON.parse(localStorage.getItem('mbtiAccounts') || '[]');
@@ -952,31 +985,6 @@
             }
         }
 
-        // 创建环绕文字
-        function createTextRing(planetData) {
-            const ring = document.createElement('div');
-            ring.className = 'planet-text-ring';
-
-            const onlineCount = getOnlineCount();
-            const texts = [
-                planetData.name,
-                planetData.feature,
-                '在线 ' + onlineCount + ' 人'
-            ];
-
-            texts.forEach((text, i) => {
-                const angle = (i / texts.length) * 360;
-                const textEl = document.createElement('div');
-                textEl.className = 'planet-text-item';
-                textEl.textContent = text;
-                textEl.style.transform = `rotate(${angle}deg) translate(60px) rotate(-${angle}deg)`;
-                ring.appendChild(textEl);
-            });
-
-            return ring;
-        }
-
-        // 创建星光
         function createStars() {
             const bg = document.getElementById('spaceBg');
             const starCount = 150;
@@ -994,28 +1002,21 @@
             }
         }
 
-        // 创建星球
         function createPlanets() {
             const container = document.getElementById('planetsContainer');
-            const padding = 80;
 
             planetsData.forEach((planet, index) => {
                 const planetEl = document.createElement('div');
                 planetEl.className = `planet ${planet.type}`;
 
-                const x = padding + Math.random() * (window.innerWidth - padding * 2 - 150);
-                const y = padding + 60 + Math.random() * (window.innerHeight - padding * 2 - 250);
-
-                planetEl.style.left = x + 'px';
-                planetEl.style.top = y + 'px';
-                planetEl.style.animationDelay = (index * 0.5) + 's';
-
-                const textRing = createTextRing(planet);
-                planetEl.appendChild(textRing);
+                planetEl.style.left = planet.x + '%';
+                planetEl.style.top = planet.y + '%';
+                planetEl.style.animationDelay = (index * 0.3) + 's';
 
                 const label = document.createElement('div');
                 label.className = 'planet-label';
-                label.textContent = `${planet.name} ${planet.title}`;
+                const onlineCount = getOnlineCount();
+                label.textContent = `${planet.name} | 在线 ${onlineCount} 人 | ${planet.title}`;
                 planetEl.appendChild(label);
 
                 planetEl.addEventListener('click', () => {
@@ -1025,6 +1026,90 @@
                 container.appendChild(planetEl);
             });
         }
+
+        function updateTransform() {
+            const container = document.getElementById('planetsContainer');
+            container.style.transform = `scale(${scale}) translate(${translateX}px, ${translateY}px)`;
+        }
+
+        function zoomIn() {
+            scale = Math.min(2.5, scale + 0.2);
+            updateTransform();
+        }
+
+        function zoomOut() {
+            scale = Math.max(0.5, scale - 0.2);
+            updateTransform();
+        }
+
+        const wrapper = document.getElementById('planetsWrapper');
+
+        wrapper.addEventListener('mousedown', (e) => {
+            isDragging = true;
+            startX = e.clientX - translateX;
+            startY = e.clientY - translateY;
+            wrapper.style.cursor = 'grabbing';
+        });
+
+        window.addEventListener('mousemove', (e) => {
+            if (!isDragging) return;
+            translateX = e.clientX - startX;
+            translateY = e.clientY - startY;
+            updateTransform();
+        });
+
+        window.addEventListener('mouseup', () => {
+            isDragging = false;
+            wrapper.style.cursor = 'grab';
+        });
+
+        wrapper.addEventListener('wheel', (e) => {
+            e.preventDefault();
+            const delta = e.deltaY > 0 ? -0.1 : 0.1;
+            scale = Math.max(0.5, Math.min(2.5, scale + delta));
+            updateTransform();
+        });
+
+        let touchStartDist = 0;
+        let touchStartScale = 1;
+
+        wrapper.addEventListener('touchstart', (e) => {
+            if (e.touches.length === 1) {
+                isDragging = true;
+                startX = e.touches[0].clientX - translateX;
+                startY = e.touches[0].clientY - translateY;
+            } else if (e.touches.length === 2) {
+                touchStartDist = Math.hypot(
+                    e.touches[0].clientX - e.touches[1].clientX,
+                    e.touches[0].clientY - e.touches[1].clientY
+                );
+                touchStartScale = scale;
+            }
+        });
+
+        wrapper.addEventListener('touchmove', (e) => {
+            e.preventDefault();
+            if (e.touches.length === 1 && isDragging) {
+                translateX = e.touches[0].clientX - startX;
+                translateY = e.touches[0].clientY - startY;
+                updateTransform();
+            } else if (e.touches.length === 2) {
+                const dist = Math.hypot(
+                    e.touches[0].clientX - e.touches[1].clientX,
+                    e.touches[0].clientY - e.touches[1].clientY
+                );
+                scale = Math.max(0.5, Math.min(2.5, touchStartScale * (dist / touchStartDist)));
+                updateTransform();
+            }
+        });
+
+        wrapper.addEventListener('touchend', () => {
+            isDragging = false;
+        });
+
+        document.getElementById('zoomIn').addEventListener('click', zoomIn);
+        document.getElementById('zoomOut').addEventListener('click', zoomOut);
+        wrapper.style.cursor = 'grab';
 
         function openModal(planet) {
             selectedPlanet = planet;

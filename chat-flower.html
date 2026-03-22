@@ -1145,6 +1145,7 @@
                 const allMessages = JSON.parse(localStorage.getItem(key) || '[]');
                 allMessages.forEach(msg => {
                     renderMessage(msg, false);
+                    createMessageCloud(msg.text);
                 });
                 const chatArea = document.getElementById('chatArea');
                 chatArea.scrollTop = chatArea.scrollHeight;
@@ -1199,6 +1200,54 @@
                 cloudGroup.add(cloud);
             }
 
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
+            canvas.width = 512;
+            canvas.height = 256;
+
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.95)';
+            ctx.strokeStyle = 'rgba(200, 200, 220, 0.8)';
+            ctx.lineWidth = 3;
+            roundRect(ctx, 10, 10, 492, 236, 20);
+            ctx.fill();
+            ctx.stroke();
+
+            ctx.fillStyle = '#333';
+            ctx.font = 'bold 28px Microsoft YaHei, PingFang SC, sans-serif';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+
+            const words = text.split('');
+            let lines = [];
+            let currentLine = '';
+            let maxCharsPerLine = 15;
+
+            for (let i = 0; i < words.length; i++) {
+                if (currentLine.length >= maxCharsPerLine) {
+                    lines.push(currentLine);
+                    currentLine = words[i];
+                } else {
+                    currentLine += words[i];
+                }
+            }
+            if (currentLine) lines.push(currentLine);
+
+            const lineHeight = 40;
+            const startY = 128 - (lines.length - 1) * lineHeight / 2;
+            for (let i = 0; i < lines.length; i++) {
+                ctx.fillText(lines[i], 256, startY + i * lineHeight);
+            }
+
+            const texture = new THREE.CanvasTexture(canvas);
+            const spriteMaterial = new THREE.SpriteMaterial({
+                map: texture,
+                transparent: true
+            });
+            const sprite = new THREE.Sprite(spriteMaterial);
+            sprite.scale.set(4, 2, 1);
+            sprite.position.y = 0.5;
+            cloudGroup.add(sprite);
+
             cloudGroup.position.set(
                 (Math.random() - 0.5) * 15,
                 5 + Math.random() * 3,
@@ -1212,6 +1261,20 @@
 
             messageClouds.push(cloudGroup);
             scene.add(cloudGroup);
+        }
+
+        function roundRect(ctx, x, y, width, height, radius) {
+            ctx.beginPath();
+            ctx.moveTo(x + radius, y);
+            ctx.lineTo(x + width - radius, y);
+            ctx.quadraticCurveTo(x + width, y, x + width, y + radius);
+            ctx.lineTo(x + width, y + height - radius);
+            ctx.quadraticCurveTo(x + width, y + height, x + width - radius, y + height);
+            ctx.lineTo(x + radius, y + height);
+            ctx.quadraticCurveTo(x, y + height, x, y + height - radius);
+            ctx.lineTo(x, y + radius);
+            ctx.quadraticCurveTo(x, y, x + radius, y);
+            ctx.closePath();
         }
 
         function addMessage(msg) {
