@@ -562,7 +562,7 @@
     <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
     <script>
         let scene, camera, renderer;
-        let tulips = [], players = [];
+        let tulips = [], players = [], messageClouds = [];
         let selectedForm = 'butterfly';
         let flowerScale = 1, playerScale = 1, cameraZoom = 1;
         let cameraOffsetX = 0, cameraOffsetZ = 0;
@@ -904,6 +904,18 @@
                     if (obj.position.x > 40) obj.position.x = -40;
                 }
             });
+            messageClouds.forEach((cloud, index) => {
+                cloud.userData.life--;
+                cloud.userData.wobble += 0.02;
+                cloud.position.y += cloud.userData.speed;
+                cloud.position.x += Math.sin(cloud.userData.wobble) * 0.01;
+                cloud.position.z += Math.cos(cloud.userData.wobble * 0.7) * 0.008;
+
+                if (cloud.userData.life < 0) {
+                    scene.remove(cloud);
+                    messageClouds.splice(index, 1);
+                }
+            });
             renderer.render(scene, camera);
         }
 
@@ -1167,8 +1179,47 @@
             }
         }
 
+        function createMessageCloud(text) {
+            const cloudGroup = new THREE.Group();
+
+            const cloudCount = 3 + Math.floor(Math.random() * 3);
+            for (let j = 0; j < cloudCount; j++) {
+                const size = 0.6 + Math.random() * 0.8;
+                const cloudGeom = new THREE.SphereGeometry(size, 16, 16);
+                const cloudMat = new THREE.MeshStandardMaterial({
+                    color: 0xffffff,
+                    transparent: true,
+                    opacity: 0.95,
+                    roughness: 1
+                });
+                const cloud = new THREE.Mesh(cloudGeom, cloudMat);
+                cloud.position.set(
+                    (Math.random() - 0.5) * 2,
+                    Math.random() * 0.5,
+                    (Math.random() - 0.5) * 1
+                );
+                cloudGroup.add(cloud);
+            }
+
+            cloudGroup.position.set(
+                (Math.random() - 0.5) * 15,
+                5 + Math.random() * 3,
+                (Math.random() - 0.5) * 10
+            );
+            cloudGroup.userData = {
+                speed: 0.01 + Math.random() * 0.02,
+                wobble: Math.random() * Math.PI * 2,
+                life: 600,
+                originalY: 5 + Math.random() * 3
+            };
+
+            messageClouds.push(cloudGroup);
+            scene.add(cloudGroup);
+        }
+
         function addMessage(msg) {
             renderMessage(msg, true);
+            createMessageCloud(msg.text);
         }
 
         function sendMessage() {

@@ -2,52 +2,69 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>MBTI 交友大厅</title>
     <style>
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        html, body {
+            width: 100%;
+            overflow-x: hidden;
         }
 
         body {
             overflow: hidden;
-            font-family: 'Microsoft YaHei', sans-serif;
+            font-family: 'Microsoft YaHei', 'PingFang SC', sans-serif;
         }
 
-        /* 背景层 */
-        .space-bg {
+        #canvas-container {
             position: fixed;
             top: 0;
             left: 0;
-            width: 100vw;
-            height: 100vh;
-            background: linear-gradient(135deg, #2d1b4e 0%, #4a2c7a 30%, #6b3fa0 60%, #8b5fc0 100%);
+            width: 100%;
+            height: 100%;
             z-index: 0;
         }
 
-        /* 星光粒子 */
-        .star {
-            position: absolute;
-            background: white;
-            border-radius: 50%;
-            animation: twinkle 3s infinite ease-in-out;
+        .ui-layer {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 10;
+            pointer-events: none;
         }
 
-        @keyframes twinkle {
-            0%, 100% { opacity: 0.3; transform: scale(1); }
-            50% { opacity: 1; transform: scale(1.2); }
-        }
-
-        /* 导航按钮 */
-        .nav-buttons {
+        /* 导航栏 - 三个按钮分布 */
+        .nav-bar {
             position: fixed;
             top: 20px;
-            left: 20px;
-            z-index: 150;
+            left: 0;
+            right: 0;
+            z-index: 100;
             display: flex;
-            gap: 10px;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 20px;
+            pointer-events: none;
+        }
+
+        .nav-left {
+            width: 100px;
+        }
+
+        .nav-center {
+            pointer-events: auto;
+        }
+
+        .nav-right {
+            pointer-events: auto;
         }
 
         .nav-btn {
@@ -55,13 +72,13 @@
             backdrop-filter: blur(12px);
             border: 1px solid rgba(255,255,255,0.3);
             color: white;
-            padding: 10px 18px;
-            border-radius: 18px;
-            font-size: 14px;
+            padding: 12px 24px;
+            border-radius: 20px;
+            font-size: 15px;
             cursor: pointer;
             transition: all 0.3s ease;
             text-decoration: none;
-            pointer-events: auto;
+            display: inline-block;
         }
 
         .nav-btn:hover {
@@ -72,12 +89,11 @@
         /* 顶部标题 */
         .header {
             position: fixed;
-            top: 0;
+            top: 70px;
             left: 0;
             width: 100%;
-            padding: 20px;
             text-align: center;
-            z-index: 100;
+            z-index: 50;
             pointer-events: none;
         }
 
@@ -86,612 +102,6 @@
             font-size: 2rem;
             text-shadow: 0 0 20px rgba(255,255,255,0.5);
             letter-spacing: 8px;
-        }
-
-        /* 星球容器 */
-        .planets-container {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100vw;
-            height: 100vh;
-            z-index: 10;
-        }
-
-        /* 星球基础样式 */
-        .planet {
-            position: absolute;
-            cursor: pointer;
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
-        }
-
-        .planet:hover {
-            z-index: 50;
-        }
-
-        .planet-label {
-            position: absolute;
-            bottom: -40px;
-            left: 50%;
-            transform: translateX(-50%);
-            white-space: nowrap;
-            color: #fff;
-            font-size: 14px;
-            text-shadow: 0 0 10px rgba(0,0,0,0.8);
-            opacity: 0;
-            transition: opacity 0.3s ease;
-            pointer-events: none;
-        }
-
-        .planet:hover .planet-label {
-            opacity: 1;
-        }
-
-        /* ============ NT 分析家组 ============ */
-
-        /* INTJ 紫晶暗核星 */
-        .planet.intj {
-            width: 90px;
-            height: 90px;
-            border-radius: 50%;
-            background: radial-gradient(circle at 30% 30%, #a060ff 0%, #6b3fa0 30%, #4a2c7a 60%, #2d1b4e 100%);
-            box-shadow: 0 0 20px rgba(160, 96, 255, 0.4), inset 0 0 15px rgba(0,0,0,0.3);
-            border: 2px solid #c0c0c0;
-            animation: float-slow 20s infinite ease-in-out, rotate-slow 40s infinite linear;
-        }
-        .planet.intj::before {
-            content: '';
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            width: 12px;
-            height: 12px;
-            background: #d0a0ff;
-            border-radius: 50%;
-            box-shadow: 0 0 15px #d0a0ff, 0 0 30px #a060ff;
-            animation: pulse 3s infinite ease-in-out;
-        }
-        .planet.intj::after {
-            content: '';
-            position: absolute;
-            top: -10px;
-            left: -10px;
-            right: -10px;
-            bottom: -10px;
-            border: 1px dashed rgba(192,192,192,0.3);
-            border-radius: 50%;
-        }
-        .planet.intj:hover {
-            transform: scale(1.15);
-            box-shadow: 0 0 40px rgba(160, 96, 255, 0.8);
-        }
-
-        /* INTP 星尘逻辑星 */
-        .planet.intp {
-            width: 85px;
-            height: 95px;
-            border-radius: 45% 55% 50% 50%;
-            background: radial-gradient(circle at 40% 40%, rgba(255,255,255,0.9) 0%, #c0e0ff 30%, #a0d0ff 60%, #80b0e0 100%);
-            box-shadow: 0 0 25px rgba(160, 208, 255, 0.5);
-            opacity: 0.9;
-            animation: float-wobble 18s infinite ease-in-out;
-        }
-        .planet.intp::before {
-            content: '';
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            width: 8px;
-            height: 8px;
-            background: #b0e0ff;
-            border-radius: 50%;
-            box-shadow: 0 0 10px #80c0ff;
-            animation: pulse 4s infinite ease-in-out;
-        }
-        .planet.intp:hover {
-            transform: scale(1.15);
-            opacity: 1;
-        }
-
-        /* ENTJ 金焰统帅星 */
-        .planet.entj {
-            width: 100px;
-            height: 100px;
-            border-radius: 50%;
-            background: radial-gradient(circle at 30% 30%, #fff0a0 0%, #ffd040 25%, #ffb020 50%, #ff8000 100%);
-            box-shadow: 0 0 30px rgba(255, 176, 32, 0.7), inset 0 0 20px rgba(255,255,255,0.3);
-            animation: float-fast 15s infinite ease-in-out, rotate-slow 25s infinite linear;
-        }
-        .planet.entj::before {
-            content: '';
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            width: 18px;
-            height: 18px;
-            background: #fff;
-            border-radius: 50%;
-            box-shadow: 0 0 20px #fff0a0, 0 0 40px #ffd040;
-            animation: pulse-fast 1.5s infinite ease-in-out;
-        }
-        .planet.entj::after {
-            content: '';
-            position: absolute;
-            top: -8px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 0;
-            height: 0;
-            border-left: 8px solid transparent;
-            border-right: 8px solid transparent;
-            border-bottom: 15px solid #ffd040;
-            filter: drop-shadow(0 0 5px #ffd040);
-        }
-        .planet.entj:hover {
-            transform: scale(1.15);
-            box-shadow: 0 0 50px rgba(255, 176, 32, 0.9);
-        }
-
-        /* ENTP 奇想流星星 */
-        .planet.entp {
-            width: 80px;
-            height: 95px;
-            border-radius: 50% 50% 40% 60% / 60% 60% 40% 40%;
-            background: radial-gradient(ellipse at 30% 30%, #fff 0%, #ffffa0 20%, #d0ff80 50%, #80ffb0 100%);
-            box-shadow: 0 0 25px rgba(208, 255, 128, 0.6);
-            animation: float-zigzag 16s infinite ease-in-out;
-        }
-        .planet.entp::before {
-            content: '';
-            position: absolute;
-            bottom: -30px;
-            left: 20%;
-            width: 60%;
-            height: 40px;
-            background: linear-gradient(to bottom, rgba(208,255,128,0.8), transparent);
-            border-radius: 50%;
-            filter: blur(5px);
-        }
-        .planet.entp::after {
-            content: '';
-            position: absolute;
-            top: 25%;
-            left: 30%;
-            width: 6px;
-            height: 6px;
-            background: #000;
-            border-radius: 50%;
-            box-shadow: 15px 0 0 #000;
-        }
-        .planet.entp:hover {
-            transform: scale(1.15);
-        }
-
-        /* ============ NF 外交家组 ============ */
-
-        /* INFJ 粉雾共情星 */
-        .planet.infj {
-            width: 90px;
-            height: 90px;
-            border-radius: 50%;
-            background: radial-gradient(circle at 40% 40%, #fff0f5 0%, #ffd0e0 30%, #e0b0d0 60%, #d0a0c0 100%);
-            box-shadow: 0 0 30px rgba(255, 208, 224, 0.6);
-            animation: float-breathing 17s infinite ease-in-out;
-        }
-        .planet.infj::before {
-            content: '';
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            width: 13px;
-            height: 13px;
-            background: #ffd0e0;
-            border-radius: 50%;
-            box-shadow: 0 0 15px #ffb0d0;
-            animation: pulse 3.5s infinite ease-in-out;
-        }
-        .planet.infj:hover {
-            transform: scale(1.1);
-        }
-
-        /* INFP 幻梦琉璃星 */
-        .planet.infp {
-            width: 85px;
-            height: 85px;
-            border-radius: 45% 55% 42% 58% / 52% 48% 55% 45%;
-            background: linear-gradient(135deg, #e0b0ff 0%, #ffb0d0 30%, #b0d0ff 60%, #c0f0ff 100%);
-            box-shadow: 0 0 25px rgba(224, 176, 255, 0.6);
-            opacity: 0.9;
-            animation: float-gentle 22s infinite ease-in-out, rotate-slow 50s infinite linear;
-        }
-        .planet.infp::before {
-            content: '';
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            width: 12px;
-            height: 12px;
-            background: #fff0ff;
-            border-radius: 50%;
-            box-shadow: 0 0 15px #e0b0ff;
-            animation: pulse 4s infinite ease-in-out;
-        }
-        .planet.infp:hover {
-            transform: scale(1.15);
-            opacity: 1;
-        }
-
-        /* ENFJ 青空引导星 */
-        .planet.enfj {
-            width: 95px;
-            height: 95px;
-            border-radius: 50%;
-            background: radial-gradient(circle at 40% 40%, #fff 0%, #d0f0ff 30%, #a0d0ff 60%, #80b0e0 100%);
-            box-shadow: 0 0 30px rgba(160, 208, 255, 0.6);
-            animation: float-slow 24s infinite ease-in-out, rotate-slow 45s infinite linear;
-        }
-        .planet.enfj::before {
-            content: '';
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            width: 14px;
-            height: 14px;
-            background: #d0f0ff;
-            border-radius: 50%;
-            box-shadow: 0 0 20px #a0d0ff;
-            animation: pulse 3.5s infinite ease-in-out;
-        }
-        .planet.enfj:hover {
-            transform: scale(1.1);
-        }
-
-        /* ENFP 橙光逐梦星 */
-        .planet.enfp {
-            width: 100px;
-            height: 100px;
-            border-radius: 50%;
-            background: radial-gradient(circle at 35% 35%, #fff0e0 0%, #ffd080 25%, #ffb060 50%, #ff9040 100%);
-            box-shadow: 0 0 35px rgba(255, 176, 96, 0.7);
-            animation: float-bouncy 14s infinite ease-in-out;
-        }
-        .planet.enfp::before {
-            content: '';
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            width: 17px;
-            height: 17px;
-            background: #fff0a0;
-            border-radius: 50%;
-            box-shadow: 0 0 25px #ffd040;
-            animation: pulse-fast 2s infinite ease-in-out;
-        }
-        .planet.enfp::after {
-            content: '';
-            position: absolute;
-            top: -5px;
-            left: 15px;
-            width: 20px;
-            height: 25px;
-            background: radial-gradient(circle at 50% 60%, #ffb0c0 0%, #ff90a0 100%);
-            border-radius: 50% 50% 50% 50%;
-            box-shadow: 50px 0 0 #ffb0c0;
-        }
-        .planet.enfp:hover {
-            transform: scale(1.15);
-        }
-
-        /* ============ SJ 守护者组 ============ */
-
-        /* ISTJ 青岩秩序星 */
-        .planet.istj {
-            width: 95px;
-            height: 95px;
-            border-radius: 12%;
-            background: radial-gradient(circle at 35% 35%, #a0c0a0 0%, #709070 30%, #507050 60%, #305030 100%);
-            box-shadow: 0 0 25px rgba(112, 144, 112, 0.6);
-            animation: float-slow 25s infinite ease-in-out, rotate-slow 60s infinite linear;
-        }
-        .planet.istj::before {
-            content: '';
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            width: 10px;
-            height: 10px;
-            background: #c0e0c0;
-            border-radius: 50%;
-            box-shadow: 0 0 12px #a0c0a0;
-            animation: pulse 4s infinite ease-in-out;
-        }
-        .planet.istj:hover {
-            transform: scale(1.1);
-        }
-
-        /* ESTJ 紫晶规则星 */
-        .planet.estj {
-            width: 100px;
-            height: 100px;
-            border-radius: 15%;
-            background: radial-gradient(circle at 35% 35%, #e0d0ff 0%, #c0a0ff 30%, #a070e0 60%, #8050c0 100%);
-            box-shadow: 0 0 30px rgba(160, 112, 224, 0.7);
-            animation: float-slow 22s infinite ease-in-out, rotate-slow 35s infinite linear;
-        }
-        .planet.estj::before {
-            content: '';
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            width: 11px;
-            height: 11px;
-            background: #d0c0ff;
-            border-radius: 50%;
-            box-shadow: 0 0 15px #c0a0ff;
-            animation: pulse 3.5s infinite ease-in-out;
-        }
-        .planet.estj::after {
-            content: '';
-            position: absolute;
-            top: 5px;
-            left: 5px;
-            right: 5px;
-            bottom: 5px;
-            border: 2px solid rgba(192,192,192,0.5);
-            border-radius: 10%;
-        }
-        .planet.estj:hover {
-            transform: scale(1.1);
-        }
-
-        /* ISFJ 奶白守护星 */
-        .planet.isfj {
-            width: 90px;
-            height: 90px;
-            border-radius: 50%;
-            background: radial-gradient(circle at 40% 40%, #fff 0%, #fff5e0 30%, #f0e0c0 60%, #e0d0b0 100%);
-            box-shadow: 0 0 30px rgba(255, 245, 224, 0.7);
-            animation: float-gentle 20s infinite ease-in-out;
-        }
-        .planet.isfj::before {
-            content: '';
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            width: 13px;
-            height: 13px;
-            background: #fff5e0;
-            border-radius: 50%;
-            box-shadow: 0 0 18px #ffe0b0;
-            animation: pulse 3.8s infinite ease-in-out;
-        }
-        .planet.isfj:hover {
-            transform: scale(1.1);
-        }
-
-        /* ESFJ 浅蓝暖心星 */
-        .planet.esfj {
-            width: 100px;
-            height: 100px;
-            border-radius: 50%;
-            background: radial-gradient(circle at 40% 40%, #fff 0%, #d0efff 30%, #a0d0ff 60%, #ffd0e0 100%);
-            box-shadow: 0 0 35px rgba(160, 208, 255, 0.7);
-            animation: float-wobble 18s infinite ease-in-out;
-        }
-        .planet.esfj::before {
-            content: '';
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            width: 15px;
-            height: 15px;
-            background: #ffd0e0;
-            border-radius: 50%;
-            box-shadow: 0 0 20px #ffb0d0;
-            animation: pulse 3s infinite ease-in-out;
-        }
-        .planet.esfj::after {
-            content: '';
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            width: 30px;
-            height: 30px;
-            background: #ffb0c0;
-            border-radius: 50%;
-            transform: translate(-100%, -90%) scale(0.4);
-            box-shadow: 60px 0 0 #ffb0c0, 30px -50px 0 #ffb0c0, 30px 50px 0 #ffb0c0;
-            opacity: 0.8;
-        }
-        .planet.esfj:hover {
-            transform: scale(1.1);
-        }
-
-        /* ============ SP 探险家组 ============ */
-
-        /* ISTP 银械工匠星 */
-        .planet.istp {
-            width: 88px;
-            height: 88px;
-            border-radius: 50%;
-            background: radial-gradient(circle at 35% 35%, #e0e0e0 0%, #c0c0c0 30%, #a0a0a0 60%, #606080 100%);
-            box-shadow: 0 0 25px rgba(160, 160, 160, 0.6);
-            animation: float-slow 23s infinite ease-in-out, rotate-slow 30s infinite linear;
-        }
-        .planet.istp::before {
-            content: '';
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            width: 10px;
-            height: 10px;
-            background: #d0c0a0;
-            border-radius: 50%;
-            box-shadow: 0 0 12px #c0b0a0;
-            animation: pulse 3.8s infinite ease-in-out;
-        }
-        .planet.istp:hover {
-            transform: scale(1.1);
-        }
-
-        /* ISFP 薄荷艺术星 */
-        .planet.isfp {
-            width: 85px;
-            height: 88px;
-            border-radius: 48% 52% 45% 55% / 55% 45% 52% 48%;
-            background: linear-gradient(135deg, #b0f0d0 0%, #d0b0ff 30%, #ffb0d0 60%, #b0e0ff 100%);
-            box-shadow: 0 0 28px rgba(176, 240, 208, 0.7);
-            opacity: 0.92;
-            animation: float-gentle 21s infinite ease-in-out, rotate-slow 55s infinite linear;
-        }
-        .planet.isfp::before {
-            content: '';
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            width: 12px;
-            height: 12px;
-            background: #d0fff0;
-            border-radius: 50%;
-            box-shadow: 0 0 15px #b0f0d0;
-            animation: pulse 4.2s infinite ease-in-out;
-        }
-        .planet.isfp:hover {
-            transform: scale(1.15);
-            opacity: 1;
-        }
-
-        /* ESTP 赤焰冒险家星 */
-        .planet.estp {
-            width: 95px;
-            height: 90px;
-            border-radius: 50% 50% 45% 55% / 60% 60% 40% 40%;
-            background: radial-gradient(ellipse at 60% 40%, #fff0a0 0%, #ff8040 30%, #ff4020 60%, #c02010 100%);
-            box-shadow: 0 0 35px rgba(255, 128, 64, 0.8);
-            animation: float-zigzag 15s infinite ease-in-out;
-        }
-        .planet.estp::before {
-            content: '';
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            width: 16px;
-            height: 16px;
-            background: #fff0a0;
-            border-radius: 50%;
-            box-shadow: 0 0 25px #ff8040;
-            animation: pulse-fast 1.8s infinite ease-in-out;
-        }
-        .planet.estp::after {
-            content: '';
-            position: absolute;
-            left: -25px;
-            top: 30%;
-            width: 40px;
-            height: 50px;
-            background: linear-gradient(to left, rgba(255,128,64,0.8), transparent);
-            border-radius: 50%;
-            filter: blur(5px);
-        }
-        .planet.estp:hover {
-            transform: scale(1.15);
-        }
-
-        /* ESFP 炫彩派对表演星 */
-        .planet.esfp {
-            width: 110px;
-            height: 110px;
-            border-radius: 50%;
-            background: radial-gradient(circle at 35% 35%, #fff0ff 0%, #ff80c0 30%, #d040a0 60%, #a02080 100%);
-            box-shadow: 0 0 40px rgba(255, 128, 192, 0.8);
-            animation: float-bouncy 13s infinite ease-in-out, rotate-slow 28s infinite linear;
-        }
-        .planet.esfp::before {
-            content: '';
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            width: 18px;
-            height: 18px;
-            background: #fff0a0;
-            border-radius: 50%;
-            box-shadow: 0 0 30px #ffd040;
-            animation: pulse-fast 2s infinite ease-in-out;
-        }
-        .planet.esfp:hover {
-            transform: scale(1.15);
-            box-shadow: 0 0 60px rgba(255, 128, 192, 1);
-        }
-
-        /* ============ 动画关键帧 ============ */
-        @keyframes float-slow {
-            0%, 100% { transform: translate(0, 0); }
-            25% { transform: translate(15px, -10px); }
-            50% { transform: translate(-10px, 15px); }
-            75% { transform: translate(-15px, -5px); }
-        }
-        @keyframes float-fast {
-            0%, 100% { transform: translate(0, 0); }
-            25% { transform: translate(20px, -15px); }
-            50% { transform: translate(-15px, 20px); }
-            75% { transform: translate(-20px, -10px); }
-        }
-        @keyframes float-gentle {
-            0%, 100% { transform: translate(0, 0) scale(1); }
-            33% { transform: translate(10px, -8px) scale(1.02); }
-            66% { transform: translate(-8px, 10px) scale(0.98); }
-        }
-        @keyframes float-wobble {
-            0%, 100% { transform: translate(0, 0) rotate(0deg); }
-            20% { transform: translate(12px, -8px) rotate(2deg); }
-            40% { transform: translate(-8px, 12px) rotate(-2deg); }
-            60% { transform: translate(-12px, -6px) rotate(1deg); }
-            80% { transform: translate(8px, 8px) rotate(-1deg); }
-        }
-        @keyframes float-zigzag {
-            0%, 100% { transform: translate(0, 0); }
-            15% { transform: translate(25px, -10px); }
-            35% { transform: translate(-15px, 20px); }
-            55% { transform: translate(-25px, -15px); }
-            75% { transform: translate(15px, 10px); }
-        }
-        @keyframes float-bouncy {
-            0%, 100% { transform: translate(0, 0); }
-            20% { transform: translate(8px, -18px); }
-            40% { transform: translate(-12px, 8px); }
-            60% { transform: translate(-5px, -12px); }
-            80% { transform: translate(15px, 5px); }
-        }
-        @keyframes rotate-slow {
-            from { transform: rotate(0deg); }
-            to { transform: rotate(360deg); }
-        }
-        @keyframes pulse {
-            0%, 100% { opacity: 0.7; transform: translate(-50%, -50%) scale(1); }
-            50% { opacity: 1; transform: translate(-50%, -50%) scale(1.3); }
-        }
-        @keyframes pulse-fast {
-            0%, 100% { opacity: 0.8; transform: translate(-50%, -50%) scale(1); }
-            50% { opacity: 1; transform: translate(-50%, -50%) scale(1.4); }
-        }
-        @keyframes float-breathing {
-            0%, 100% { transform: translate(0, 0) scale(1); }
-            50% { transform: translate(5px, -5px) scale(1.05); }
         }
 
         /* 选择聊天室弹窗 */
@@ -813,21 +223,39 @@
         .cancel-btn:hover {
             background: rgba(100,100,120,0.2);
         }
+
+        @media (max-width: 600px) {
+            .header h1 {
+                font-size: 1.3rem;
+                letter-spacing: 4px;
+            }
+            .nav-btn {
+                padding: 10px 16px;
+                font-size: 13px;
+            }
+        }
     </style>
 </head>
 <body>
-    <div class="space-bg" id="spaceBg"></div>
+    <div id="canvas-container"></div>
 
-    <div class="nav-buttons">
-        <a href="friend.html" class="nav-btn">交友云</a>
-        <a href="profile.html" class="nav-btn">个人中心</a>
+    <div class="ui-layer">
+        <!-- 导航栏 -->
+        <div class="nav-bar">
+            <div class="nav-left"></div>
+            <div class="nav-center">
+                <a href="friend.html" class="nav-btn">👥 交友云</a>
+            </div>
+            <div class="nav-right">
+                <a href="profile.html" class="nav-btn">👤 个人中心</a>
+            </div>
+        </div>
+
+        <!-- 标题 -->
+        <div class="header">
+            <h1>MBTI 交友大厅</h1>
+        </div>
     </div>
-
-    <div class="header">
-        <h1>MBTI 交友大厅</h1>
-    </div>
-
-    <div class="planets-container" id="planetsContainer"></div>
 
     <!-- 选择聊天室弹窗 -->
     <div class="modal-overlay" id="modalOverlay">
@@ -849,96 +277,274 @@
         </div>
     </div>
 
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script>
-        // 16型MBTI星球数据
-        const planetsData = [
-            { type: 'intj', name: 'INTJ', title: '战略家 · 暗核智慧' },
-            { type: 'intp', name: 'INTP', title: '逻辑家 · 星尘脑洞' },
-            { type: 'entj', name: 'ENTJ', title: '统帅 · 气场全开' },
-            { type: 'entp', name: 'ENTP', title: '辩论家 · 脑洞无限' },
-            { type: 'infj', name: 'INFJ', title: '洞察者 · 温柔共情' },
-            { type: 'infp', name: 'INFP', title: '理想家 · 幻梦琉璃' },
-            { type: 'enfj', name: 'ENFJ', title: '引导者 · 温暖包容' },
-            { type: 'enfp', name: 'ENFP', title: '逐梦者 · 热情向阳' },
-            { type: 'istj', name: 'ISTJ', title: '检查者 · 青岩秩序' },
-            { type: 'estj', name: 'ESTJ', title: '管理者 · 规则至上' },
-            { type: 'isfj', name: 'ISFJ', title: '守卫者 · 奶白守护' },
-            { type: 'esfj', name: 'ESFJ', title: '执政官 · 暖心社交' },
-            { type: 'istp', name: 'ISTP', title: '鉴赏家 · 银械工匠' },
-            { type: 'isfp', name: 'ISFP', title: '探险家 · 薄荷艺术' },
-            { type: 'estp', name: 'ESTP', title: '企业家 · 赤焰冒险' },
-            { type: 'esfp', name: 'ESFP', title: '表演者 · 派对中心' }
-        ];
-
+        let scene, camera, renderer;
+        let planets = [];
+        let particles;
+        let time = 0;
+        let cameraZoom = 1;
+        let cameraOffsetX = 0, cameraOffsetZ = 0;
+        let isDragging = false, isPinching = false;
+        let lastMouseX = 0, lastMouseY = 0;
+        let initialPinchDistance = 0, initialCameraZoom = 1;
+        let raycaster, mouse;
         let selectedPlanet = null;
 
-        // 创建星光
-        function createStars() {
-            const bg = document.getElementById('spaceBg');
-            const starCount = 150;
+        const planetsData = [
+            { type: 'INTJ', name: 'INTJ', title: '战略家 · 暗核智慧', color: 0x6b3fa0, size: 1.0 },
+            { type: 'INTP', name: 'INTP', title: '逻辑家 · 星尘脑洞', color: 0x80b0e0, size: 0.9 },
+            { type: 'ENTJ', name: 'ENTJ', title: '统帅 · 气场全开', color: 0xffb020, size: 1.1 },
+            { type: 'ENTP', name: 'ENTP', title: '辩论家 · 脑洞无限', color: 0xd0ff80, size: 0.9 },
+            { type: 'INFJ', name: 'INFJ', title: '洞察者 · 温柔共情', color: 0xffd0e0, size: 0.95 },
+            { type: 'INFP', name: 'INFP', title: '理想家 · 幻梦琉璃', color: 0xe0b0ff, size: 0.9 },
+            { type: 'ENFJ', name: 'ENFJ', title: '引导者 · 温暖包容', color: 0xa0d0ff, size: 1.0 },
+            { type: 'ENFP', name: 'ENFP', title: '逐梦者 · 热情向阳', color: 0xffb060, size: 1.05 },
+            { type: 'ISTJ', name: 'ISTJ', title: '检查者 · 青岩秩序', color: 0x507050, size: 1.0 },
+            { type: 'ESTJ', name: 'ESTJ', title: '管理者 · 规则至上', color: 0xa070e0, size: 1.05 },
+            { type: 'ISFJ', name: 'ISFJ', title: '守卫者 · 奶白守护', color: 0xf0e0c0, size: 0.95 },
+            { type: 'ESFJ', name: 'ESFJ', title: '执政官 · 暖心社交', color: 0xa0d0ff, size: 1.0 },
+            { type: 'ISTP', name: 'ISTP', title: '鉴赏家 · 银械工匠', color: 0x808090, size: 0.95 },
+            { type: 'ISFP', name: 'ISFP', title: '探险家 · 薄荷艺术', color: 0xb0f0d0, size: 0.9 },
+            { type: 'ESTP', name: 'ESTP', title: '企业家 · 赤焰冒险', color: 0xff6040, size: 1.0 },
+            { type: 'ESFP', name: 'ESFP', title: '表演者 · 派对中心', color: 0xff80c0, size: 1.1 }
+        ];
 
-            for (let i = 0; i < starCount; i++) {
-                const star = document.createElement('div');
-                star.className = 'star';
-                star.style.left = Math.random() * 100 + 'vw';
-                star.style.top = Math.random() * 100 + 'vh';
-                star.style.width = (Math.random() * 3 + 1) + 'px';
-                star.style.height = star.style.width;
-                star.style.animationDelay = Math.random() * 3 + 's';
-                star.style.animationDuration = (Math.random() * 3 + 2) + 's';
-                bg.appendChild(star);
-            }
+        function initThree() {
+            const container = document.getElementById('canvas-container');
+
+            scene = new THREE.Scene();
+
+            camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 100);
+            camera.position.set(0, 3, 15);
+            camera.lookAt(0, 0, 0);
+
+            renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+            container.appendChild(renderer.domElement);
+
+            const spaceGeometry = new THREE.SphereGeometry(50, 64, 64);
+            const spaceMaterial = new THREE.MeshBasicMaterial({
+                side: THREE.BackSide,
+                color: 0x2d1b4e
+            });
+            const space = new THREE.Mesh(spaceGeometry, spaceMaterial);
+            scene.add(space);
+
+            const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
+            scene.add(ambientLight);
+            const pointLight = new THREE.PointLight(0xffffff, 1);
+            pointLight.position.set(10, 10, 10);
+            scene.add(pointLight);
+
+            createStars();
+            createPlanets();
+
+            raycaster = new THREE.Raycaster();
+            mouse = new THREE.Vector2();
+
+            window.addEventListener('resize', onWindowResize);
+            renderer.domElement.addEventListener('wheel', onWheel, { passive: true });
+            renderer.domElement.addEventListener('mousedown', onMouseDown);
+            renderer.domElement.addEventListener('mousemove', onMouseMove);
+            renderer.domElement.addEventListener('mouseup', onMouseUp);
+            renderer.domElement.addEventListener('touchstart', onTouchStart, { passive: false });
+            renderer.domElement.addEventListener('touchmove', onTouchMove, { passive: false });
+            renderer.domElement.addEventListener('touchend', onTouchEnd);
+            renderer.domElement.addEventListener('click', onClick);
+
+            animate();
         }
 
-        // 创建星球
+        function createStars() {
+            const starsGeometry = new THREE.BufferGeometry();
+            const starCount = 1000;
+            const positions = new Float32Array(starCount * 3);
+
+            for (let i = 0; i < starCount * 3; i += 3) {
+                positions[i] = (Math.random() - 0.5) * 80;
+                positions[i + 1] = (Math.random() - 0.5) * 80;
+                positions[i + 2] = (Math.random() - 0.5) * 80;
+            }
+
+            starsGeometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+            const starsMaterial = new THREE.PointsMaterial({
+                color: 0xffffff,
+                size: 0.15,
+                transparent: true,
+                opacity: 0.8
+            });
+            particles = new THREE.Points(starsGeometry, starsMaterial);
+            particles.name = 'particles';
+            scene.add(particles);
+        }
+
         function createPlanets() {
-            const container = document.getElementById('planetsContainer');
-            const padding = 80;
-
-            planetsData.forEach((planet, index) => {
-                const planetEl = document.createElement('div');
-                planetEl.className = `planet ${planet.type}`;
-
-                // 随机位置（避开边缘）
-                const x = padding + Math.random() * (window.innerWidth - padding * 2 - 120);
-                const y = padding + 60 + Math.random() * (window.innerHeight - padding * 2 - 180);
-
-                planetEl.style.left = x + 'px';
-                planetEl.style.top = y + 'px';
-                planetEl.style.animationDelay = (index * 0.5) + 's';
-
-                // 标签
-                const label = document.createElement('div');
-                label.className = 'planet-label';
-                label.textContent = `${planet.name} ${planet.title}`;
-                planetEl.appendChild(label);
-
-                // 点击事件
-                planetEl.addEventListener('click', () => {
-                    openModal(planet);
+            const radius = 8;
+            planetsData.forEach((data, i) => {
+                const angle = (i / planetsData.length) * Math.PI * 2;
+                const geometry = new THREE.SphereGeometry(data.size, 32, 32);
+                const material = new THREE.MeshStandardMaterial({
+                    color: data.color,
+                    roughness: 0.5,
+                    metalness: 0.3,
+                    emissive: data.color,
+                    emissiveIntensity: 0.2
                 });
 
-                container.appendChild(planetEl);
+                const planet = new THREE.Mesh(geometry, material);
+                planet.position.x = Math.cos(angle) * radius;
+                planet.position.z = Math.sin(angle) * radius;
+                planet.position.y = Math.sin(i * 0.5) * 1.5;
+                planet.userData = { data: data, angle: angle, originalY: planet.position.y };
+
+                const glowGeometry = new THREE.SphereGeometry(data.size * 1.3, 32, 32);
+                const glowMaterial = new THREE.MeshBasicMaterial({
+                    color: data.color,
+                    transparent: true,
+                    opacity: 0.15,
+                    side: THREE.BackSide
+                });
+                const glow = new THREE.Mesh(glowGeometry, glowMaterial);
+                planet.add(glow);
+
+                planets.push(planet);
+                scene.add(planet);
             });
         }
 
-        // 打开选择聊天室弹窗
-        function openModal(planet) {
-            selectedPlanet = planet;
-            document.getElementById('modalPlanetName').textContent = planet.name + ' ' + planet.title;
+        function animate() {
+            requestAnimationFrame(animate);
+            time += 0.01;
+
+            planets.forEach((planet, i) => {
+                const speed = 0.2 + i * 0.02;
+                planet.userData.angle += 0.002;
+                planet.position.x = Math.cos(planet.userData.angle) * 8;
+                planet.position.z = Math.sin(planet.userData.angle) * 8;
+                planet.position.y = planet.userData.originalY + Math.sin(time * 1.5 + i) * 0.5;
+                planet.rotation.y += 0.01;
+            });
+
+            if (particles) {
+                particles.rotation.y += 0.0003;
+            }
+
+            updateCamera();
+            renderer.render(scene, camera);
+        }
+
+        function updateCamera() {
+            camera.position.set(cameraOffsetX, 3 / cameraZoom, 15 / cameraZoom + cameraOffsetZ);
+            camera.lookAt(cameraOffsetX, 0, cameraOffsetZ);
+        }
+
+        function onWindowResize() {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        }
+
+        function onWheel(e) {
+            cameraZoom = Math.max(0.5, Math.min(3, cameraZoom - e.deltaY * 0.001));
+        }
+
+        function getTouchDistance(touches) {
+            const dx = touches[0].clientX - touches[1].clientX;
+            const dy = touches[0].clientY - touches[1].clientY;
+            return Math.sqrt(dx * dx + dy * dy);
+        }
+
+        function onMouseDown(e) {
+            isDragging = true;
+            lastMouseX = e.clientX;
+            lastMouseY = e.clientY;
+        }
+
+        function onMouseMove(e) {
+            if (!isDragging || isPinching) return;
+
+            const deltaX = (e.clientX - lastMouseX) * 0.03 / cameraZoom;
+            const deltaY = (e.clientY - lastMouseY) * 0.03 / cameraZoom;
+
+            cameraOffsetX -= deltaX;
+            cameraOffsetZ -= deltaY;
+
+            cameraOffsetX = Math.max(-10, Math.min(10, cameraOffsetX));
+            cameraOffsetZ = Math.max(-10, Math.min(10, cameraOffsetZ));
+
+            lastMouseX = e.clientX;
+            lastMouseY = e.clientY;
+        }
+
+        function onMouseUp() {
+            isDragging = false;
+        }
+
+        function onTouchStart(e) {
+            if (e.touches.length === 2) {
+                isPinching = true;
+                isDragging = false;
+                initialPinchDistance = getTouchDistance(e.touches);
+                initialCameraZoom = cameraZoom;
+            } else if (e.touches.length === 1) {
+                onMouseDown({ clientX: e.touches[0].clientX, clientY: e.touches[0].clientY });
+            }
+        }
+
+        function onTouchMove(e) {
+            if (e.touches.length === 2 && isPinching) {
+                e.preventDefault();
+                const currentDistance = getTouchDistance(e.touches);
+                const scale = currentDistance / initialPinchDistance;
+                cameraZoom = Math.max(0.5, Math.min(3, initialCameraZoom * scale));
+            } else if (e.touches.length === 1) {
+                onMouseMove({ clientX: e.touches[0].clientX, clientY: e.touches[0].clientY });
+            }
+        }
+
+        function onTouchEnd(e) {
+            if (e.touches.length < 2) {
+                isPinching = false;
+            }
+            if (e.touches.length === 0) {
+                isDragging = false;
+            }
+        }
+
+        function onClick(e) {
+            mouse.x = (e.clientX / window.innerWidth) * 2 - 1;
+            mouse.y = -(e.clientY / window.innerHeight) * 2 + 1;
+
+            raycaster.setFromCamera(mouse, camera);
+            const intersects = raycaster.intersectObjects(planets);
+
+            if (intersects.length > 0) {
+                const planet = intersects[0].object;
+                while (planet.parent && planet.parent !== scene) {
+                    planet.parent.userData.data && (planet.userData = planet.parent.userData);
+                    planet.parent.userData.data && (planet = planet.parent);
+                }
+                if (planet.userData && planet.userData.data) {
+                    openModal(planet.userData.data);
+                }
+            }
+        }
+
+        function openModal(planetData) {
+            selectedPlanet = planetData;
+            document.getElementById('modalPlanetName').textContent = planetData.name + ' ' + planetData.title;
             document.getElementById('modalOverlay').classList.add('show');
         }
 
-        // 关闭弹窗
         function closeModal() {
             selectedPlanet = null;
             document.getElementById('modalOverlay').classList.remove('show');
         }
 
-        // 进入聊天室
         function enterChat(roomType) {
             if (!selectedPlanet) return;
-
             const mbti = selectedPlanet.name.toUpperCase();
             if (roomType === 'flower') {
                 window.location.href = `chat-flower.html?mbti=${mbti}`;
@@ -947,24 +553,16 @@
             }
         }
 
-        // 初始化弹窗事件
-        function initModal() {
-            document.getElementById('flowerOption').addEventListener('click', () => enterChat('flower'));
-            document.getElementById('oceanOption').addEventListener('click', () => enterChat('ocean'));
-            document.getElementById('cancelBtn').addEventListener('click', closeModal);
-            document.getElementById('modalOverlay').addEventListener('click', (e) => {
-                if (e.target === document.getElementById('modalOverlay')) {
-                    closeModal();
-                }
-            });
-        }
-
-        // 初始化
-        document.addEventListener('DOMContentLoaded', () => {
-            createStars();
-            createPlanets();
-            initModal();
+        document.getElementById('flowerOption').addEventListener('click', () => enterChat('flower'));
+        document.getElementById('oceanOption').addEventListener('click', () => enterChat('ocean'));
+        document.getElementById('cancelBtn').addEventListener('click', closeModal);
+        document.getElementById('modalOverlay').addEventListener('click', (e) => {
+            if (e.target === document.getElementById('modalOverlay')) {
+                closeModal();
+            }
         });
+
+        initThree();
     </script>
 </body>
 </html>
