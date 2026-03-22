@@ -377,6 +377,11 @@
         let scene, camera, renderer;
         let water, bubbles = [], fishes = [];
         let time = 0;
+        let cameraZoom = 1;
+        let cameraOffsetX = 0, cameraOffsetZ = 0;
+        let isDragging = false, isPinching = false;
+        let lastMouseX = 0, lastMouseY = 0;
+        let initialPinchDistance = 0, initialCameraZoom = 1;
 
         function initThree() {
             const container = document.getElementById('canvas-container');
@@ -420,6 +425,19 @@
             createSeabed();
 
             window.addEventListener('resize', onWindowResize);
+            window.addEventListener('wheel', onWheel);
+
+            // 鼠标事件
+            window.addEventListener('mousedown', onMouseDown);
+            window.addEventListener('mousemove', onMouseMove);
+            window.addEventListener('mouseup', onMouseUp);
+            window.addEventListener('mouseleave', onMouseUp);
+
+            // 触摸事件
+            window.addEventListener('touchstart', onTouchStart, { passive: false });
+            window.addEventListener('touchmove', onTouchMove, { passive: false });
+            window.addEventListener('touchend', onTouchEnd);
+            window.addEventListener('touchcancel', onTouchEnd);
 
             animate();
         }
@@ -692,10 +710,101 @@
             renderer.render(scene, camera);
         }
 
+        function updateCamera() {
+            camera.position.set(cameraOffsetX, 2 / cameraZoom, 10 / cameraZoom + cameraOffsetZ);
+            camera.lookAt(cameraOffsetX, 0, cameraOffsetZ);
+        }
+
         function onWindowResize() {
             camera.aspect = window.innerWidth / window.innerHeight;
             camera.updateProjectionMatrix();
             renderer.setSize(window.innerWidth, window.innerHeight);
+        }
+
+        function onWheel(e) {
+            cameraZoom = Math.max(0.5, Math.min(3, cameraZoom - e.deltaY * 0.001));
+            updateCamera();
+        }
+
+        // 计算两个触摸点之间的距离
+        function getTouchDistance(touches) {
+            const dx = touches[0].clientX - touches[1].clientX;
+            const dy = touches[0].clientY - touches[1].clientY;
+            return Math.sqrt(dx * dx + dy * dy);
+        }
+
+        // 鼠标/触摸事件处理
+        function onMouseDown(e) {
+            if (e.target.closest('.chat-panel') || e.target.closest('.input-area') ||
+                e.target.closest('.top-nav') || e.target.closest('.depth-indicator')) {
+                return;
+            }
+            isDragging = true;
+            lastMouseX = e.clientX || (e.touches && e.touches[0].clientX);
+            lastMouseY = e.clientY || (e.touches && e.touches[0].clientY);
+        }
+
+        function onMouseMove(e) {
+            if (!isDragging || isPinching) return;
+            if (e.target.closest('.chat-panel') || e.target.closest('.input-area') ||
+                e.target.closest('.top-nav') || e.target.closest('.depth-indicator')) {
+                return;
+            }
+
+            const clientX = e.clientX || (e.touches && e.touches[0].clientX);
+            const clientY = e.clientY || (e.touches && e.touches[0].clientY);
+
+            const deltaX = (clientX - lastMouseX) * 0.03 / cameraZoom;
+            const deltaY = (clientY - lastMouseY) * 0.03 / cameraZoom;
+
+            cameraOffsetX -= deltaX;
+            cameraOffsetZ -= deltaY;
+
+            // 限制移动范围
+            cameraOffsetX = Math.max(-20, Math.min(20, cameraOffsetX));
+            cameraOffsetZ = Math.max(-20, Math.min(20, cameraOffsetZ));
+
+            updateCamera();
+
+            lastMouseX = clientX;
+            lastMouseY = clientY;
+        }
+
+        function onMouseUp() {
+            isDragging = false;
+        }
+
+        // 触摸事件 - 双指缩放
+        function onTouchStart(e) {
+            if (e.touches.length === 2) {
+                isPinching = true;
+                isDragging = false;
+                initialPinchDistance = getTouchDistance(e.touches);
+                initialCameraZoom = cameraZoom;
+            } else if (e.touches.length === 1) {
+                onMouseDown(e);
+            }
+        }
+
+        function onTouchMove(e) {
+            if (e.touches.length === 2 && isPinching) {
+                e.preventDefault();
+                const currentDistance = getTouchDistance(e.touches);
+                const scale = currentDistance / initialPinchDistance;
+                cameraZoom = Math.max(0.5, Math.min(3, initialCameraZoom * scale));
+                updateCamera();
+            } else if (e.touches.length === 1) {
+                onMouseMove(e);
+            }
+        }
+
+        function onTouchEnd(e) {
+            if (e.touches.length < 2) {
+                isPinching = false;
+            }
+            if (e.touches.length === 0) {
+                isDragging = false;
+            }
         }
 
         // UI 功能
@@ -786,14 +895,6 @@
                 sendMessage();
             }
         }
-
-        // 深度调节
-        let depth = 60;
-        document.addEventListener('wheel', (e) => {
-            depth = Math.max(10, Math.min(100, depth + e.deltaY * 0.05));
-            document.getElementById('depthFill').style.height = depth + '%';
-            document.getElementById('depthText').textContent = Math.round(depth) + '米';
-        });
 
         // 从URL获取MBTI类型
         function getUrlParams() {

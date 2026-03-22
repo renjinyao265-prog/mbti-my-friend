@@ -439,6 +439,10 @@
         let tulips = [], players = [];
         let selectedForm = 'butterfly';
         let flowerScale = 1, playerScale = 1, cameraZoom = 1;
+        let cameraOffsetX = 0, cameraOffsetZ = 0;
+        let isDragging = false, isPinching = false;
+        let lastMouseX = 0, lastMouseY = 0;
+        let initialPinchDistance = 0, initialCameraZoom = 1;
         let socket, currentUser;
         let messages = [];
 
@@ -557,6 +561,18 @@
 
             window.addEventListener('resize', onWindowResize);
             window.addEventListener('wheel', onWheel);
+
+            // 鼠标事件
+            window.addEventListener('mousedown', onMouseDown);
+            window.addEventListener('mousemove', onMouseMove);
+            window.addEventListener('mouseup', onMouseUp);
+            window.addEventListener('mouseleave', onMouseUp);
+
+            // 触摸事件
+            window.addEventListener('touchstart', onTouchStart, { passive: false });
+            window.addEventListener('touchmove', onTouchMove, { passive: false });
+            window.addEventListener('touchend', onTouchEnd);
+            window.addEventListener('touchcancel', onTouchEnd);
 
             animate();
         }
@@ -782,8 +798,94 @@
         }
 
         function updateCamera() {
-            camera.position.set(0, 8 / cameraZoom, 20 / cameraZoom);
-            camera.lookAt(0, 2, 0);
+            camera.position.set(cameraOffsetX, 8 / cameraZoom, 20 / cameraZoom + cameraOffsetZ);
+            camera.lookAt(cameraOffsetX, 2, cameraOffsetZ);
+        }
+
+        // 计算两个触摸点之间的距离
+        function getTouchDistance(touches) {
+            const dx = touches[0].clientX - touches[1].clientX;
+            const dy = touches[0].clientY - touches[1].clientY;
+            return Math.sqrt(dx * dx + dy * dy);
+        }
+
+        // 鼠标/触摸事件处理
+        function onMouseDown(e) {
+            if (e.target.closest('.chat-panel') || e.target.closest('.input-area') ||
+                e.target.closest('.top-nav') || e.target.closest('.form-selector')) {
+                return;
+            }
+            isDragging = true;
+            lastMouseX = e.clientX || (e.touches && e.touches[0].clientX);
+            lastMouseY = e.clientY || (e.touches && e.touches[0].clientY);
+        }
+
+        function onMouseMove(e) {
+            if (!isDragging || isPinching) return;
+            if (e.target.closest('.chat-panel') || e.target.closest('.input-area') ||
+                e.target.closest('.top-nav') || e.target.closest('.form-selector')) {
+                return;
+            }
+
+            const clientX = e.clientX || (e.touches && e.touches[0].clientX);
+            const clientY = e.clientY || (e.touches && e.touches[0].clientY);
+
+            const deltaX = (clientX - lastMouseX) * 0.05 / cameraZoom;
+            const deltaY = (clientY - lastMouseY) * 0.05 / cameraZoom;
+
+            cameraOffsetX -= deltaX;
+            cameraOffsetZ -= deltaY;
+
+            // 限制移动范围
+            cameraOffsetX = Math.max(-30, Math.min(30, cameraOffsetX));
+            cameraOffsetZ = Math.max(-30, Math.min(30, cameraOffsetZ));
+
+            updateCamera();
+
+            lastMouseX = clientX;
+            lastMouseY = clientY;
+        }
+
+        function onMouseUp() {
+            isDragging = false;
+        }
+
+        // 触摸事件 - 双指缩放
+        function onTouchStart(e) {
+            if (e.touches.length === 2) {
+                isPinching = true;
+                isDragging = false;
+                initialPinchDistance = getTouchDistance(e.touches);
+                initialCameraZoom = cameraZoom;
+            } else if (e.touches.length === 1) {
+                onMouseDown(e);
+            }
+        }
+
+        function onTouchMove(e) {
+            if (e.touches.length === 2 && isPinching) {
+                e.preventDefault();
+                const currentDistance = getTouchDistance(e.touches);
+                const scale = currentDistance / initialPinchDistance;
+                cameraZoom = Math.max(0.5, Math.min(3, initialCameraZoom * scale));
+                updateCamera();
+                // 更新滑块显示
+                const zoomSlider = document.getElementById('cameraZoom');
+                const zoomValue = document.getElementById('cameraZoomValue');
+                if (zoomSlider) zoomSlider.value = cameraZoom;
+                if (zoomValue) zoomValue.textContent = Math.round(cameraZoom * 100) + '%';
+            } else if (e.touches.length === 1) {
+                onMouseMove(e);
+            }
+        }
+
+        function onTouchEnd(e) {
+            if (e.touches.length < 2) {
+                isPinching = false;
+            }
+            if (e.touches.length === 0) {
+                isDragging = false;
+            }
         }
 
         function updateFlowerScale(value) {
