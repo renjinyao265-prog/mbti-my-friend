@@ -403,9 +403,13 @@
             const accounts = getAllAccounts();
 
             // 过滤掉当前用户自己
-            allPlayers = accounts.filter(account =>
-                currentUser && account.account !== currentUser.account
-            );
+            if (currentUser && currentUser.account) {
+                allPlayers = accounts.filter(account =>
+                    account.account !== currentUser.account
+                );
+            } else {
+                allPlayers = accounts;
+            }
 
             document.getElementById('onlineCount').textContent =
                 `当前共有 ${allPlayers.length} 位玩家`;

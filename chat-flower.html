@@ -384,6 +384,7 @@
                 width: 92% !important;
                 max-height: 180px !important;
                 bottom: 100px !important;
+                z-index: 150 !important;
             }
 
             .input-area {
@@ -567,6 +568,7 @@
         let initialPinchDistance = 0, initialCameraZoom = 1;
         let socket, currentUser;
         let messages = [];
+        let currentRoomMbti = '';
 
         const formIcons = {
             butterfly: '🦋',
@@ -647,18 +649,7 @@
 
             } catch(e) {
                 console.log('使用本地模式');
-                initLocalUsers();
             }
-        }
-
-        function initLocalUsers() {
-            const localUsers = [
-                { id: '1', nickname: '花蝶小蓝', mbti: 'INFP', form: 'butterfly' },
-                { id: '2', nickname: '蜜蜂小蜜', mbti: 'ENFP', form: 'bee' },
-                { id: '3', nickname: '瓢虫小红', mbti: 'ISFP', form: 'ladybug' }
-            ];
-            localUsers.forEach(u => addOnlineUser(u));
-            updateOnlineCount();
         }
 
         function initThree() {
@@ -1113,7 +1104,42 @@
             }
         }
 
-        function addMessage(msg) {
+        // 获取聊天室消息存储key
+        function getRoomMessagesKey() {
+            return `mbtiChatMessages_${currentRoomMbti}`;
+        }
+
+        // 保存消息到 localStorage
+        function saveMessageToStorage(msg) {
+            try {
+                const key = getRoomMessagesKey();
+                const allMessages = JSON.parse(localStorage.getItem(key) || '[]');
+                // 添加时间戳
+                msg.timestamp = Date.now();
+                allMessages.push(msg);
+                // 只保留最近300条消息
+                if (allMessages.length > 300) {
+                    allMessages.shift();
+                }
+                localStorage.setItem(key, JSON.stringify(allMessages));
+            } catch (e) {}
+        }
+
+        // 从 localStorage 加载历史消息
+        function loadMessagesFromStorage() {
+            try {
+                const key = getRoomMessagesKey();
+                const allMessages = JSON.parse(localStorage.getItem(key) || '[]');
+                allMessages.forEach(msg => {
+                    renderMessage(msg, false);
+                });
+                const chatArea = document.getElementById('chatArea');
+                chatArea.scrollTop = chatArea.scrollHeight;
+            } catch (e) {}
+        }
+
+        // 渲染消息到界面
+        function renderMessage(msg, saveToStorage = true) {
             const chatArea = document.getElementById('chatArea');
             const isSelf = msg.userId === (currentUser && currentUser.id);
             const div = document.createElement('div');
@@ -1129,10 +1155,17 @@
             chatArea.scrollTop = chatArea.scrollHeight;
             messages.push(msg);
 
-            // 如果是自己发的消息，增加统计
+            // 如果是自己发的消息，增加统计并保存
             if (isSelf) {
                 incrementChatCount();
+                if (saveToStorage) {
+                    saveMessageToStorage(msg);
+                }
             }
+        }
+
+        function addMessage(msg) {
+            renderMessage(msg, true);
         }
 
         function sendMessage() {
@@ -1165,6 +1198,7 @@
 
         function initRoom() {
             const mbti = getUrlParams();
+            currentRoomMbti = mbti;
             const mbtiData = {
                 INTJ: { name: '战略家', desc: '高冷智慧的战略家们在花田相聚' },
                 INTP: { name: '逻辑家', desc: '脑洞大开的思考者们在花田相聚' },
@@ -1186,6 +1220,9 @@
             const data = mbtiData[mbti] || mbtiData.INFP;
             document.getElementById('roomTitle').textContent = `🌷 ${mbti} 郁金香花田`;
             document.getElementById('roomSubtitle').textContent = data.desc;
+
+            // 加载历史消息
+            loadMessagesFromStorage();
         }
 
         init();

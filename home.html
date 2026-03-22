@@ -300,7 +300,7 @@
                 desc: '高冷智慧的战略家',
                 color: 0x6b3fa0,
                 glowColor: '#a060ff',
-                online: 86,
+                online: 0,
                 shape: 'perfect-circle',
                 style: 'crystal'
             },
@@ -310,7 +310,7 @@
                 desc: '脑洞大开的思考者',
                 color: 0x80b0e0,
                 glowColor: '#80c0ff',
-                online: 95,
+                online: 0,
                 shape: 'soft-ellipse',
                 style: 'stardust'
             },
@@ -320,7 +320,7 @@
                 desc: '气场全开的领导者',
                 color: 0xffb040,
                 glowColor: '#ffd040',
-                online: 72,
+                online: 0,
                 shape: 'crown',
                 style: 'golden-flame'
             },
@@ -330,7 +330,7 @@
                 desc: '脑洞无限的辩论家',
                 color: 0xa0e080,
                 glowColor: '#b0f080',
-                online: 88,
+                online: 0,
                 shape: 'comet',
                 style: 'whimsical'
             },
@@ -340,7 +340,7 @@
                 desc: '温柔治愈的洞察者',
                 color: 0xffb0d0,
                 glowColor: '#ffc0d8',
-                online: 132,
+                online: 0,
                 shape: 'soft-circle',
                 style: 'pink-mist'
             },
@@ -350,7 +350,7 @@
                 desc: '浪漫敏感的理想主义者',
                 color: 0xd0a0ff,
                 glowColor: '#d8b0ff',
-                online: 156,
+                online: 0,
                 shape: 'irregular',
                 style: 'dream-glass'
             },
@@ -360,7 +360,7 @@
                 desc: '温暖包容的引导者',
                 color: 0xa0d0ff,
                 glowColor: '#b0d8ff',
-                online: 105,
+                online: 0,
                 shape: 'sky-circle',
                 style: 'clear-sky'
             },
@@ -370,7 +370,7 @@
                 desc: '热情活泼的逐梦者',
                 color: 0xffb060,
                 glowColor: '#ffc070',
-                online: 142,
+                online: 0,
                 shape: 'sun-ears',
                 style: 'orange-dream'
             },
@@ -380,7 +380,7 @@
                 desc: '严谨可靠的秩序者',
                 color: 0x608060,
                 glowColor: '#70a070',
-                online: 68,
+                online: 0,
                 shape: 'hexagon',
                 style: 'rock'
             },
@@ -390,7 +390,7 @@
                 desc: '温暖贴心的守护者',
                 color: 0xf0e0c0,
                 glowColor: '#f5e8d0',
-                online: 98,
+                online: 0,
                 shape: 'warm-circle',
                 style: 'cream'
             },
@@ -400,7 +400,7 @@
                 desc: '规则至上的管理者',
                 color: 0xa080d0,
                 glowColor: '#b090e0',
-                online: 55,
+                online: 0,
                 shape: 'octagon',
                 style: 'amethyst'
             },
@@ -410,7 +410,7 @@
                 desc: '暖心社交的执政官',
                 color: 0xa0d0f0,
                 glowColor: '#b0d8f5',
-                online: 112,
+                online: 0,
                 shape: 'tentacle',
                 style: 'warm-sky'
             },
@@ -420,7 +420,7 @@
                 desc: '酷感实干的工匠',
                 color: 0x9090a0,
                 glowColor: '#a0a0b0',
-                online: 76,
+                online: 0,
                 shape: 'mechanical',
                 style: 'silver-machine'
             },
@@ -430,7 +430,7 @@
                 desc: '温柔审美的艺术家',
                 color: 0xb0f0d0,
                 glowColor: '#c0f8d8',
-                online: 124,
+                online: 0,
                 shape: 'watercolor',
                 style: 'mint-art'
             },
@@ -440,7 +440,7 @@
                 desc: '热血行动的冒险家',
                 color: 0xff8060,
                 glowColor: '#ff9070',
-                online: 83,
+                online: 0,
                 shape: 'meteor',
                 style: 'red-flame'
             },
@@ -450,7 +450,7 @@
                 desc: '派对中心的表演者',
                 color: 0xff80c0,
                 glowColor: '#ff90d0',
-                online: 168,
+                online: 0,
                 shape: 'party',
                 style: 'colorful-stage'
             }
@@ -463,6 +463,11 @@
         let planets = [];
         let hoveredPlanet = null;
         let raycaster, mouse;
+        let cameraZoom = 1;
+        let cameraOffsetX = 0, cameraOffsetZ = 0;
+        let isDragging = false, isPinching = false;
+        let lastMouseX = 0, lastMouseY = 0;
+        let initialPinchDistance = 0, initialCameraZoom = 1;
 
         function initThree() {
             const container = document.getElementById('canvas-container');
@@ -510,6 +515,18 @@
             window.addEventListener('resize', onWindowResize);
             window.addEventListener('mousemove', onMouseMove);
             window.addEventListener('click', onMouseClick);
+            window.addEventListener('wheel', onWheel);
+
+            // 鼠标事件
+            window.addEventListener('mousedown', onMouseDown);
+            window.addEventListener('mouseup', onMouseUp);
+            window.addEventListener('mouseleave', onMouseUp);
+
+            // 触摸事件
+            window.addEventListener('touchstart', onTouchStart, { passive: false });
+            window.addEventListener('touchmove', onTouchMove, { passive: false });
+            window.addEventListener('touchend', onTouchEnd);
+            window.addEventListener('touchcancel', onTouchEnd);
 
             animate();
         }
@@ -848,10 +865,99 @@
             }
         }
 
+        function updateCamera() {
+            camera.position.set(cameraOffsetX, 0, 14 / cameraZoom + cameraOffsetZ);
+            camera.lookAt(cameraOffsetX, 0, cameraOffsetZ);
+        }
+
         function onWindowResize() {
             camera.aspect = window.innerWidth / window.innerHeight;
             camera.updateProjectionMatrix();
             renderer.setSize(window.innerWidth, window.innerHeight);
+        }
+
+        function onWheel(e) {
+            cameraZoom = Math.max(0.5, Math.min(3, cameraZoom - e.deltaY * 0.001));
+            updateCamera();
+        }
+
+        // 计算两个触摸点之间的距离
+        function getTouchDistance(touches) {
+            const dx = touches[0].clientX - touches[1].clientX;
+            const dy = touches[0].clientY - touches[1].clientY;
+            return Math.sqrt(dx * dx + dy * dy);
+        }
+
+        // 鼠标/触摸事件处理
+        function onMouseDown(e) {
+            if (e.target.closest('.top-nav') || e.target.closest('.planet-tooltip')) {
+                return;
+            }
+            isDragging = true;
+            lastMouseX = e.clientX || (e.touches && e.touches[0].clientX);
+            lastMouseY = e.clientY || (e.touches && e.touches[0].clientY);
+        }
+
+        function onMouseMove(e) {
+            if (!isDragging || isPinching) return;
+            if (e.target.closest('.top-nav') || e.target.closest('.planet-tooltip')) {
+                return;
+            }
+
+            const clientX = e.clientX || (e.touches && e.touches[0].clientX);
+            const clientY = e.clientY || (e.touches && e.touches[0].clientY);
+
+            const deltaX = (clientX - lastMouseX) * 0.02 / cameraZoom;
+            const deltaY = (clientY - lastMouseY) * 0.02 / cameraZoom;
+
+            cameraOffsetX -= deltaX;
+            cameraOffsetZ -= deltaY;
+
+            // 限制移动范围
+            cameraOffsetX = Math.max(-10, Math.min(10, cameraOffsetX));
+            cameraOffsetZ = Math.max(-10, Math.min(10, cameraOffsetZ));
+
+            updateCamera();
+
+            lastMouseX = clientX;
+            lastMouseY = clientY;
+        }
+
+        function onMouseUp() {
+            isDragging = false;
+        }
+
+        // 触摸事件 - 双指缩放
+        function onTouchStart(e) {
+            if (e.touches.length === 2) {
+                isPinching = true;
+                isDragging = false;
+                initialPinchDistance = getTouchDistance(e.touches);
+                initialCameraZoom = cameraZoom;
+            } else if (e.touches.length === 1) {
+                onMouseDown(e);
+            }
+        }
+
+        function onTouchMove(e) {
+            if (e.touches.length === 2 && isPinching) {
+                e.preventDefault();
+                const currentDistance = getTouchDistance(e.touches);
+                const scale = currentDistance / initialPinchDistance;
+                cameraZoom = Math.max(0.5, Math.min(3, initialCameraZoom * scale));
+                updateCamera();
+            } else if (e.touches.length === 1) {
+                onMouseMove(e);
+            }
+        }
+
+        function onTouchEnd(e) {
+            if (e.touches.length < 2) {
+                isPinching = false;
+            }
+            if (e.touches.length === 0) {
+                isDragging = false;
+            }
         }
 
         function switchTab(tab) {
