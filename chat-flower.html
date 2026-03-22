@@ -905,15 +905,13 @@
                 }
             });
             messageClouds.forEach((cloud, index) => {
-                cloud.userData.life--;
                 cloud.userData.wobble += 0.02;
                 cloud.position.y += cloud.userData.speed;
                 cloud.position.x += Math.sin(cloud.userData.wobble) * 0.01;
                 cloud.position.z += Math.cos(cloud.userData.wobble * 0.7) * 0.008;
 
-                if (cloud.userData.life < 0) {
-                    scene.remove(cloud);
-                    messageClouds.splice(index, 1);
+                if (cloud.position.y > 25) {
+                    cloud.position.y = 3;
                 }
             });
             renderer.render(scene, camera);
@@ -1207,9 +1205,8 @@
                 (Math.random() - 0.5) * 10
             );
             cloudGroup.userData = {
-                speed: 0.01 + Math.random() * 0.02,
+                speed: 0.008 + Math.random() * 0.015,
                 wobble: Math.random() * Math.PI * 2,
-                life: 600,
                 originalY: 5 + Math.random() * 3
             };
 
