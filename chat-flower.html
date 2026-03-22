@@ -101,31 +101,133 @@
             font-weight: 600;
         }
 
-        .control-panel {
+        /* 右下角浮动按钮 */
+        .floating-menu-btn {
             position: fixed;
-            top: 100px;
-            right: 30px;
-            z-index: 100;
-            pointer-events: auto;
-            background: rgba(255,255,255,0.85);
-            backdrop-filter: blur(15px);
-            border: 1px solid rgba(255,255,255,0.5);
-            border-radius: 24px;
-            padding: 22px;
-            width: 190px;
-            box-shadow: 0 10px 40px rgba(0,50,0,0.2);
+            bottom: 100px;
+            right: 20px;
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #60c060 0%, #40a040 100%);
+            border: none;
+            color: white;
+            font-size: 24px;
+            cursor: pointer;
+            z-index: 200;
+            box-shadow: 0 8px 30px rgba(80,180,80,0.5);
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
 
-        .control-panel h3 {
+        .floating-menu-btn:hover {
+            transform: scale(1.1);
+            box-shadow: 0 12px 40px rgba(80,180,80,0.6);
+        }
+
+        .floating-menu-btn.active {
+            transform: rotate(45deg);
+            background: linear-gradient(135deg, #ff8080 0%, #e06060 100%);
+        }
+
+        /* 展开的控制面板 */
+        .expanded-panel {
+            position: fixed;
+            bottom: 170px;
+            right: 20px;
+            z-index: 190;
+            pointer-events: auto;
+            background: rgba(255,255,255,0.92);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255,255,255,0.6);
+            border-radius: 24px;
+            padding: 20px;
+            width: 260px;
+            max-height: 70vh;
+            overflow-y: auto;
+            box-shadow: 0 15px 50px rgba(0,50,0,0.25);
+            display: none;
+            animation: slideUp 0.3s ease;
+        }
+
+        .expanded-panel.show {
+            display: block;
+        }
+
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .panel-section {
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid rgba(100,180,100,0.15);
+        }
+
+        .panel-section:last-child {
+            margin-bottom: 0;
+            padding-bottom: 0;
+            border-bottom: none;
+        }
+
+        .panel-section h3 {
             color: #3a6a3a;
             font-size: 14px;
-            margin-bottom: 18px;
+            margin-bottom: 14px;
             text-align: center;
             font-weight: 700;
         }
 
+        /* 形态选择 - 网格布局 */
+        .form-options-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 8px;
+        }
+
+        .form-option-grid {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            padding: 10px 6px;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            background: rgba(100,180,100,0.08);
+        }
+
+        .form-option-grid:hover {
+            background: rgba(100,180,100,0.18);
+            transform: scale(1.05);
+        }
+
+        .form-option-grid.selected {
+            background: rgba(100,200,100,0.3);
+            box-shadow: 0 0 12px rgba(100,200,100,0.3);
+        }
+
+        .form-option-grid .form-icon {
+            font-size: 22px;
+        }
+
+        .form-option-grid .form-name {
+            color: #3a6a3a;
+            font-size: 10px;
+            font-weight: 600;
+        }
+
+        /* 控制组 */
         .control-group {
-            margin-bottom: 16px;
+            margin-bottom: 14px;
+        }
+
+        .control-group:last-child {
+            margin-bottom: 0;
         }
 
         .control-group label {
@@ -146,66 +248,6 @@
             color: #4a8a4a;
             font-size: 11px;
             margin-top: 4px;
-        }
-
-        .form-panel {
-            position: fixed;
-            top: 100px;
-            left: 30px;
-            z-index: 100;
-            pointer-events: auto;
-            background: rgba(255,255,255,0.85);
-            backdrop-filter: blur(15px);
-            border: 1px solid rgba(255,255,255,0.5);
-            border-radius: 24px;
-            padding: 22px;
-            width: 180px;
-            box-shadow: 0 10px 40px rgba(0,50,0,0.2);
-        }
-
-        .form-panel h3 {
-            color: #3a6a3a;
-            font-size: 14px;
-            margin-bottom: 16px;
-            text-align: center;
-            font-weight: 700;
-        }
-
-        .form-options {
-            display: flex;
-            flex-direction: column;
-            gap: 9px;
-        }
-
-        .form-option {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            padding: 10px 12px;
-            border-radius: 14px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            background: rgba(100,180,100,0.08);
-        }
-
-        .form-option:hover {
-            background: rgba(100,180,100,0.18);
-            transform: translateX(3px);
-        }
-
-        .form-option.selected {
-            background: rgba(100,200,100,0.3);
-            box-shadow: 0 0 15px rgba(100,200,100,0.3);
-        }
-
-        .form-icon {
-            font-size: 24px;
-        }
-
-        .form-name {
-            color: #3a6a3a;
-            font-size: 13px;
-            font-weight: 600;
         }
 
         .chat-area {
@@ -352,76 +394,79 @@
             <p id="roomSubtitle">在浪漫的花田里与同频的人聊天</p>
         </div>
 
-        <div class="form-panel">
-            <h3>🦋 选择你的形态</h3>
-            <div class="form-options">
-                <div class="form-option selected" data-form="butterfly" onclick="selectForm('butterfly')">
-                    <span class="form-icon">🦋</span>
-                    <span class="form-name">蝴蝶</span>
-                </div>
-                <div class="form-option" data-form="bee" onclick="selectForm('bee')">
-                    <span class="form-icon">🐝</span>
-                    <span class="form-name">蜜蜂</span>
-                </div>
-                <div class="form-option" data-form="ladybug" onclick="selectForm('ladybug')">
-                    <span class="form-icon">🐞</span>
-                    <span class="form-name">瓢虫</span>
-                </div>
-                <div class="form-option" data-form="dragonfly" onclick="selectForm('dragonfly')">
-                    <span class="form-icon">🪰</span>
-                    <span class="form-name">蜻蜓</span>
-                </div>
-                <div class="form-option" data-form="beetle" onclick="selectForm('beetle')">
-                    <span class="form-icon">🪲</span>
-                    <span class="form-name">甲虫</span>
-                </div>
-                <div class="form-option" data-form="ant" onclick="selectForm('ant')">
-                    <span class="form-icon">🐜</span>
-                    <span class="form-name">蚂蚁</span>
-                </div>
-                <div class="form-option" data-form="spider" onclick="selectForm('spider')">
-                    <span class="form-icon">🕷️</span>
-                    <span class="form-name">蜘蛛</span>
-                </div>
-                <div class="form-option" data-form="firefly" onclick="selectForm('firefly')">
-                    <span class="form-icon">✨</span>
-                    <span class="form-name">萤火虫</span>
-                </div>
-                <div class="form-option" data-form="dewdrop" onclick="selectForm('dewdrop')">
-                    <span class="form-icon">💧</span>
-                    <span class="form-name">露水</span>
-                </div>
-                <div class="form-option" data-form="pollen" onclick="selectForm('pollen')">
-                    <span class="form-icon">🌸</span>
-                    <span class="form-name">花粉</span>
+        <!-- 右下角浮动按钮 -->
+        <button class="floating-menu-btn" id="menuBtn" onclick="toggleMenu()">⚙️</button>
+
+        <!-- 展开的控制面板 -->
+        <div class="expanded-panel" id="expandedPanel">
+            <div class="panel-section">
+                <h3>🦋 选择你的形态</h3>
+                <div class="form-options-grid">
+                    <div class="form-option-grid selected" data-form="butterfly" onclick="selectForm('butterfly')">
+                        <span class="form-icon">🦋</span>
+                        <span class="form-name">蝴蝶</span>
+                    </div>
+                    <div class="form-option-grid" data-form="bee" onclick="selectForm('bee')">
+                        <span class="form-icon">🐝</span>
+                        <span class="form-name">蜜蜂</span>
+                    </div>
+                    <div class="form-option-grid" data-form="ladybug" onclick="selectForm('ladybug')">
+                        <span class="form-icon">🐞</span>
+                        <span class="form-name">瓢虫</span>
+                    </div>
+                    <div class="form-option-grid" data-form="dragonfly" onclick="selectForm('dragonfly')">
+                        <span class="form-icon">🪰</span>
+                        <span class="form-name">蜻蜓</span>
+                    </div>
+                    <div class="form-option-grid" data-form="beetle" onclick="selectForm('beetle')">
+                        <span class="form-icon">🪲</span>
+                        <span class="form-name">甲虫</span>
+                    </div>
+                    <div class="form-option-grid" data-form="ant" onclick="selectForm('ant')">
+                        <span class="form-icon">🐜</span>
+                        <span class="form-name">蚂蚁</span>
+                    </div>
+                    <div class="form-option-grid" data-form="spider" onclick="selectForm('spider')">
+                        <span class="form-icon">🕷️</span>
+                        <span class="form-name">蜘蛛</span>
+                    </div>
+                    <div class="form-option-grid" data-form="firefly" onclick="selectForm('firefly')">
+                        <span class="form-icon">✨</span>
+                        <span class="form-name">萤火虫</span>
+                    </div>
+                    <div class="form-option-grid" data-form="dewdrop" onclick="selectForm('dewdrop')">
+                        <span class="form-icon">💧</span>
+                        <span class="form-name">露水</span>
+                    </div>
+                    <div class="form-option-grid" data-form="pollen" onclick="selectForm('pollen')">
+                        <span class="form-icon">🌸</span>
+                        <span class="form-name">花粉</span>
+                    </div>
                 </div>
             </div>
-        </div>
 
-        <div class="control-panel">
-            <h3>📐 缩放控制</h3>
-
-            <div class="control-group">
-                <label>🌷 花朵大小</label>
-                <input type="range" id="flowerScale" min="0.3" max="3" step="0.1" value="1" oninput="updateFlowerScale(this.value)">
-                <div class="control-value" id="flowerScaleValue">100%</div>
-            </div>
-
-            <div class="control-group">
-                <label>🐛 玩家大小</label>
-                <input type="range" id="playerScale" min="0.05" max="3" step="0.05" value="1" oninput="updatePlayerScale(this.value)">
-                <div class="control-value" id="playerScaleValue">100%</div>
-            </div>
-
-            <div class="control-group">
-                <label>🔍 视野缩放</label>
-                <input type="range" id="cameraZoom" min="0.5" max="3" step="0.1" value="1" oninput="updateCameraZoom(this.value)">
-                <div class="control-value" id="cameraZoomValue">100%</div>
+            <div class="panel-section">
+                <h3>📐 缩放控制</h3>
+                <div class="control-group">
+                    <label>🌷 花朵大小</label>
+                    <input type="range" id="flowerScale" min="0.3" max="3" step="0.1" value="1" oninput="updateFlowerScale(this.value)">
+                    <div class="control-value" id="flowerScaleValue">100%</div>
+                </div>
+                <div class="control-group">
+                    <label>🐛 玩家大小</label>
+                    <input type="range" id="playerScale" min="0.05" max="3" step="0.05" value="1" oninput="updatePlayerScale(this.value)">
+                    <div class="control-value" id="playerScaleValue">100%</div>
+                </div>
+                <div class="control-group">
+                    <label>🔍 视野缩放</label>
+                    <input type="range" id="cameraZoom" min="0.5" max="3" step="0.1" value="1" oninput="updateCameraZoom(this.value)">
+                    <div class="control-value" id="cameraZoomValue">100%</div>
+                </div>
             </div>
         </div>
 
         <div class="zoom-hint">
-            <p>🖱️ 滚轮也可以缩放视野</p>
+            <p>🖱️ 滚轮/双指缩放 · 拖动移动</p>
         </div>
 
         <div class="chat-area" id="chatArea"></div>
@@ -466,6 +511,13 @@
             initSocket();
             initThree();
             initRoom();
+            // 初始化UI显示
+            document.getElementById('flowerScale').value = flowerScale;
+            document.getElementById('flowerScaleValue').textContent = Math.round(flowerScale * 100) + '%';
+            document.getElementById('playerScale').value = playerScale;
+            document.getElementById('playerScaleValue').textContent = Math.round(playerScale * 100) + '%';
+            document.getElementById('cameraZoom').value = cameraZoom;
+            document.getElementById('cameraZoomValue').textContent = Math.round(cameraZoom * 100) + '%';
         }
 
         function initUser() {
@@ -812,7 +864,8 @@
         // 鼠标/触摸事件处理
         function onMouseDown(e) {
             if (e.target.closest('.chat-panel') || e.target.closest('.input-area') ||
-                e.target.closest('.top-nav') || e.target.closest('.form-selector')) {
+                e.target.closest('.top-nav') || e.target.closest('.expanded-panel') ||
+                e.target.closest('.floating-menu-btn')) {
                 return;
             }
             isDragging = true;
@@ -823,7 +876,8 @@
         function onMouseMove(e) {
             if (!isDragging || isPinching) return;
             if (e.target.closest('.chat-panel') || e.target.closest('.input-area') ||
-                e.target.closest('.top-nav') || e.target.closest('.form-selector')) {
+                e.target.closest('.top-nav') || e.target.closest('.expanded-panel') ||
+                e.target.closest('.floating-menu-btn')) {
                 return;
             }
 
@@ -917,12 +971,19 @@
 
         function selectForm(form) {
             selectedForm = form;
-            document.querySelectorAll('.form-option').forEach(el => el.classList.remove('selected'));
-            document.querySelector(`[data-form="${form}"]`).classList.add('selected');
+            document.querySelectorAll('.form-option-grid').forEach(el => el.classList.remove('selected'));
+            document.querySelectorAll(`[data-form="${form}"]`).forEach(el => el.classList.add('selected'));
             if (socket && currentUser) {
                 currentUser.form = form;
                 socket.emit('changeForm', { userId: currentUser.id, form: form });
             }
+        }
+
+        function toggleMenu() {
+            const btn = document.getElementById('menuBtn');
+            const panel = document.getElementById('expandedPanel');
+            btn.classList.toggle('active');
+            panel.classList.toggle('show');
         }
 
         function addOnlineUser(user) {
