@@ -468,6 +468,7 @@
         let isDragging = false, isPinching = false;
         let lastMouseX = 0, lastMouseY = 0;
         let initialPinchDistance = 0, initialCameraZoom = 1;
+        let clickStartX = 0, clickStartY = 0;
 
         function initThree() {
             const container = document.getElementById('canvas-container');
@@ -858,8 +859,26 @@
             }
         }
 
+        let clickStartX = 0, clickStartY = 0;
+
+        function onMouseDown(e) {
+            if (e.target.closest('.top-nav') || e.target.closest('.planet-tooltip')) {
+                return;
+            }
+            isDragging = true;
+            lastMouseX = e.clientX || (e.touches && e.touches[0].clientX);
+            lastMouseY = e.clientY || (e.touches && e.touches[0].clientY);
+            clickStartX = lastMouseX;
+            clickStartY = lastMouseY;
+        }
+
         function onMouseClick(event) {
-            if (hoveredPlanet && hoveredPlanet.userData && hoveredPlanet.userData.mbti) {
+            // 如果拖拽距离很小，才认为是点击
+            const dx = (event.clientX || clickStartX) - clickStartX;
+            const dy = (event.clientY || clickStartY) - clickStartY;
+            const distance = Math.sqrt(dx * dx + dy * dy);
+
+            if (distance < 5 && hoveredPlanet && hoveredPlanet.userData && hoveredPlanet.userData.mbti) {
                 const mbti = hoveredPlanet.userData.mbti;
                 window.location.href = `chat-flower.html?mbti=${mbti}`;
             }
@@ -896,6 +915,8 @@
             isDragging = true;
             lastMouseX = e.clientX || (e.touches && e.touches[0].clientX);
             lastMouseY = e.clientY || (e.touches && e.touches[0].clientY);
+            clickStartX = lastMouseX;
+            clickStartY = lastMouseY;
         }
 
         function onMouseMove(e) {
