@@ -739,8 +739,7 @@
 
                 // 点击事件
                 planetEl.addEventListener('click', () => {
-                    alert(`进入 ${planet.name} 聊天室！\n这里可以跳转到你的聊天页面~`);
-                    // window.location.href = `chat.html?type=${planet.type}`; // 取消注释即可跳转
+                    window.location.href = `chat-flower.html?mbti=${planet.name.toUpperCase()}`;
                 });
 
                 container.appendChild(planetEl);
