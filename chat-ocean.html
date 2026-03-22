@@ -1190,6 +1190,7 @@
         document.getElementById('cameraZoomValue').textContent = Math.round(cameraZoom * 100) + '%';
 
         // 深度调节
+        let isAdjustingDepth = false;
         document.addEventListener('wheel', (e) => {
             if (e.target.closest('.expanded-panel')) {
                 depth = Math.max(10, Math.min(100, depth + e.deltaY * 0.05));
