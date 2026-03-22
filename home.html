@@ -2,13 +2,19 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>MBTI 星球交友 - 主页</title>
     <style>
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        html, body {
+            width: 100%;
+            overflow-x: hidden;
         }
 
         body {
@@ -239,7 +245,7 @@
     <!-- 顶部导航 -->
     <nav class="top-nav">
         <div class="logo">🌟 MBTI 星球</div>
-        <div class="user-info">
+        <div class="user-info" style="cursor: pointer;" onclick="goToProfile()">
             <div class="user-detail">
                 <div class="user-name" id="userName">小星人</div>
                 <div class="user-mbti" id="userMbti">INFP</div>
@@ -856,6 +862,10 @@
             } else if (tab === 'profile') {
                 window.location.href = 'profile.html';
             }
+        }
+
+        function goToProfile() {
+            window.location.href = 'profile.html';
         }
 
         function initUser() {
