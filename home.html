@@ -1,0 +1,904 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MBTI 星球交友 - 主页</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            overflow: hidden;
+            font-family: 'Microsoft YaHei', 'PingFang SC', sans-serif;
+        }
+
+        /* Three.js 画布 */
+        #canvas-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+        }
+
+        /* 浅紫色银河系背景叠加层 - 非常淡 */
+        .bg-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(ellipse at center,
+                #3a2060 0%,
+                #2a1545 25%,
+                #1d0d35 50%,
+                #150825 75%,
+                #0f061a 100%);
+            opacity: 0.35;
+            z-index: 1;
+            pointer-events: none;
+        }
+
+        /* 顶部导航 */
+        .top-nav {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            padding: 20px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 100;
+            background: linear-gradient(to bottom, rgba(40,15,70,0.7), transparent);
+        }
+
+        .logo {
+            color: white;
+            font-size: 22px;
+            font-weight: 700;
+            letter-spacing: 4px;
+            text-shadow: 0 0 20px rgba(200,160,255,0.6);
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .user-avatar {
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #ffb0d0, #d090ff);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 700;
+            box-shadow: 0 5px 20px rgba(208,144,255,0.5);
+        }
+
+        .user-detail {
+            text-align: right;
+        }
+
+        .user-name {
+            color: white;
+            font-size: 15px;
+            font-weight: 600;
+        }
+
+        .user-mbti {
+            color: rgba(255,255,255,0.7);
+            font-size: 13px;
+        }
+
+        /* 底部导航 */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            padding: 15px 30px 25px;
+            display: flex;
+            justify-content: center;
+            gap: 50px;
+            z-index: 100;
+            background: linear-gradient(to top, rgba(30,10,55,0.8), transparent);
+        }
+
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 5px;
+            color: rgba(255,255,255,0.6);
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .nav-item:hover,
+        .nav-item.active {
+            color: white;
+        }
+
+        .nav-icon {
+            font-size: 26px;
+        }
+
+        .nav-text {
+            font-size: 12px;
+        }
+
+        /* 页面标题 */
+        .page-title {
+            position: fixed;
+            top: 100px;
+            left: 50%;
+            transform: translateX(-50%);
+            text-align: center;
+            z-index: 50;
+            pointer-events: none;
+        }
+
+        .page-title h2 {
+            color: white;
+            font-size: 28px;
+            letter-spacing: 8px;
+            text-shadow: 0 0 30px rgba(200,160,255,0.5);
+        }
+
+        .page-title p {
+            color: rgba(255,255,255,0.6);
+            font-size: 14px;
+            margin-top: 8px;
+        }
+
+        /* 提示文字 */
+        .hint {
+            position: fixed;
+            bottom: 100px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: rgba(255,255,255,0.5);
+            font-size: 13px;
+            z-index: 50;
+            pointer-events: none;
+        }
+
+        /* 星球悬浮卡片 */
+        .planet-tooltip {
+            position: fixed;
+            background: rgba(255,255,255,0.95);
+            backdrop-filter: blur(15px);
+            border-radius: 24px;
+            padding: 22px 28px;
+            box-shadow: 0 25px 80px rgba(0,0,0,0.35);
+            z-index: 200;
+            display: none;
+            pointer-events: none;
+            min-width: 200px;
+        }
+
+        .planet-tooltip.show {
+            display: block;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(15px) scale(0.95); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+
+        .tooltip-mbti {
+            font-size: 28px;
+            font-weight: 900;
+            margin-bottom: 6px;
+            letter-spacing: 2px;
+        }
+
+        .tooltip-name {
+            font-size: 16px;
+            color: #555;
+            margin-bottom: 12px;
+            font-weight: 600;
+        }
+
+        .tooltip-desc {
+            font-size: 13px;
+            color: #888;
+            line-height: 1.6;
+        }
+
+        .tooltip-count {
+            margin-top: 15px;
+            padding-top: 12px;
+            border-top: 1px solid #eee;
+            font-size: 14px;
+            font-weight: 700;
+        }
+
+        .tooltip-hint {
+            margin-top: 8px;
+            font-size: 12px;
+            color: #aaa;
+        }
+    </style>
+</head>
+<body>
+    <div id="canvas-container"></div>
+    <div class="bg-overlay"></div>
+
+    <!-- 顶部导航 -->
+    <nav class="top-nav">
+        <div class="logo">🌟 MBTI 星球</div>
+        <div class="user-info">
+            <div class="user-detail">
+                <div class="user-name" id="userName">小星人</div>
+                <div class="user-mbti" id="userMbti">INFP</div>
+            </div>
+            <div class="user-avatar" id="userAvatar">星</div>
+        </div>
+    </nav>
+
+    <!-- 页面标题 -->
+    <div class="page-title">
+        <h2>MBTI 星球大厅</h2>
+        <p>找到你的同频星球，点击进入聊天大厅</p>
+    </div>
+
+    <!-- 底部导航 -->
+    <nav class="bottom-nav">
+        <div class="nav-item active" onclick="switchTab('planet')">
+            <span class="nav-icon">🌍</span>
+            <span class="nav-text">星球大厅</span>
+        </div>
+        <div class="nav-item" onclick="switchTab('friend')">
+            <span class="nav-icon">☁️</span>
+            <span class="nav-text">交友云</span>
+        </div>
+        <div class="nav-item" onclick="switchTab('profile')">
+            <span class="nav-icon">👤</span>
+            <span class="nav-text">我的</span>
+        </div>
+    </nav>
+
+    <!-- 提示 -->
+    <div class="hint">✨ 点击星球进入聊天大厅 ✨</div>
+
+    <!-- 星球悬浮卡片 -->
+    <div class="planet-tooltip" id="planetTooltip">
+        <div class="tooltip-mbti" id="tooltipMbti">INFP</div>
+        <div class="tooltip-name" id="tooltipName">理想家</div>
+        <div class="tooltip-desc" id="tooltipDesc">浪漫敏感的理想主义者</div>
+        <div class="tooltip-count" id="tooltipCount">👥 156 人在线</div>
+        <div class="tooltip-hint">点击进入聊天大厅</div>
+    </div>
+
+    <!-- 引入 Three.js -->
+    <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script>
+        // ========== 16型 MBTI 完整数据 ==========
+        const mbtiPlanets = {
+            INTJ: {
+                name: '战略家',
+                title: '暗核智慧',
+                desc: '高冷智慧的战略家',
+                color: 0x6b3fa0,
+                glowColor: '#a060ff',
+                online: 86,
+                shape: 'perfect-circle',
+                style: 'crystal'
+            },
+            INTP: {
+                name: '逻辑家',
+                title: '星尘脑洞',
+                desc: '脑洞大开的思考者',
+                color: 0x80b0e0,
+                glowColor: '#80c0ff',
+                online: 95,
+                shape: 'soft-ellipse',
+                style: 'stardust'
+            },
+            ENTJ: {
+                name: '统帅',
+                title: '气场全开',
+                desc: '气场全开的领导者',
+                color: 0xffb040,
+                glowColor: '#ffd040',
+                online: 72,
+                shape: 'crown',
+                style: 'golden-flame'
+            },
+            ENTP: {
+                name: '辩论家',
+                title: '脑洞无限',
+                desc: '脑洞无限的辩论家',
+                color: 0xa0e080,
+                glowColor: '#b0f080',
+                online: 88,
+                shape: 'comet',
+                style: 'whimsical'
+            },
+            INFJ: {
+                name: '洞察者',
+                title: '温柔共情',
+                desc: '温柔治愈的洞察者',
+                color: 0xffb0d0,
+                glowColor: '#ffc0d8',
+                online: 132,
+                shape: 'soft-circle',
+                style: 'pink-mist'
+            },
+            INFP: {
+                name: '理想家',
+                title: '幻梦琉璃',
+                desc: '浪漫敏感的理想主义者',
+                color: 0xd0a0ff,
+                glowColor: '#d8b0ff',
+                online: 156,
+                shape: 'irregular',
+                style: 'dream-glass'
+            },
+            ENFJ: {
+                name: '引导者',
+                title: '温暖包容',
+                desc: '温暖包容的引导者',
+                color: 0xa0d0ff,
+                glowColor: '#b0d8ff',
+                online: 105,
+                shape: 'sky-circle',
+                style: 'clear-sky'
+            },
+            ENFP: {
+                name: '逐梦者',
+                title: '热情向阳',
+                desc: '热情活泼的逐梦者',
+                color: 0xffb060,
+                glowColor: '#ffc070',
+                online: 142,
+                shape: 'sun-ears',
+                style: 'orange-dream'
+            },
+            ISTJ: {
+                name: '检查者',
+                title: '青岩秩序',
+                desc: '严谨可靠的秩序者',
+                color: 0x608060,
+                glowColor: '#70a070',
+                online: 68,
+                shape: 'hexagon',
+                style: 'rock'
+            },
+            ISFJ: {
+                name: '守卫者',
+                title: '奶白守护',
+                desc: '温暖贴心的守护者',
+                color: 0xf0e0c0,
+                glowColor: '#f5e8d0',
+                online: 98,
+                shape: 'warm-circle',
+                style: 'cream'
+            },
+            ESTJ: {
+                name: '管理者',
+                title: '规则至上',
+                desc: '规则至上的管理者',
+                color: 0xa080d0,
+                glowColor: '#b090e0',
+                online: 55,
+                shape: 'octagon',
+                style: 'amethyst'
+            },
+            ESFJ: {
+                name: '执政官',
+                title: '暖心社交',
+                desc: '暖心社交的执政官',
+                color: 0xa0d0f0,
+                glowColor: '#b0d8f5',
+                online: 112,
+                shape: 'tentacle',
+                style: 'warm-sky'
+            },
+            ISTP: {
+                name: '鉴赏家',
+                title: '银械工匠',
+                desc: '酷感实干的工匠',
+                color: 0x9090a0,
+                glowColor: '#a0a0b0',
+                online: 76,
+                shape: 'mechanical',
+                style: 'silver-machine'
+            },
+            ISFP: {
+                name: '探险家',
+                title: '薄荷艺术',
+                desc: '温柔审美的艺术家',
+                color: 0xb0f0d0,
+                glowColor: '#c0f8d8',
+                online: 124,
+                shape: 'watercolor',
+                style: 'mint-art'
+            },
+            ESTP: {
+                name: '企业家',
+                title: '赤焰冒险',
+                desc: '热血行动的冒险家',
+                color: 0xff8060,
+                glowColor: '#ff9070',
+                online: 83,
+                shape: 'meteor',
+                style: 'red-flame'
+            },
+            ESFP: {
+                name: '表演者',
+                title: '派对中心',
+                desc: '派对中心的表演者',
+                color: 0xff80c0,
+                glowColor: '#ff90d0',
+                online: 168,
+                shape: 'party',
+                style: 'colorful-stage'
+            }
+        };
+
+        const mbtiOrder = Object.keys(mbtiPlanets);
+
+        // ========== Three.js 场景 ==========
+        let scene, camera, renderer;
+        let planets = [];
+        let hoveredPlanet = null;
+        let raycaster, mouse;
+
+        function initThree() {
+            const container = document.getElementById('canvas-container');
+
+            // 场景
+            scene = new THREE.Scene();
+
+            // 相机
+            camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 100);
+            camera.position.z = 14;
+
+            // 渲染器
+            renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+            container.appendChild(renderer.domElement);
+
+            // 射线检测
+            raycaster = new THREE.Raycaster();
+            mouse = new THREE.Vector2();
+
+            // 灯光
+            const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
+            scene.add(ambientLight);
+
+            const directionalLight = new THREE.DirectionalLight(0xffffff, 0.9);
+            directionalLight.position.set(5, 8, 5);
+            scene.add(directionalLight);
+
+            const purpleLight = new THREE.PointLight(0xa060ff, 0.6, 50);
+            purpleLight.position.set(-5, 3, 5);
+            scene.add(purpleLight);
+
+            const blueLight = new THREE.PointLight(0x6090ff, 0.5, 50);
+            blueLight.position.set(5, -3, 5);
+            scene.add(blueLight);
+
+            // 创建银河系背景
+            createGalaxyBackground();
+
+            // 创建MBTI星球
+            createPlanets();
+
+            // 事件监听
+            window.addEventListener('resize', onWindowResize);
+            window.addEventListener('mousemove', onMouseMove);
+            window.addEventListener('click', onMouseClick);
+
+            animate();
+        }
+
+        function createGalaxyBackground() {
+            // 背景星空
+            const starsGeometry = new THREE.BufferGeometry();
+            const starCount = 1500;
+            const positions = new Float32Array(starCount * 3);
+            const colors = new Float32Array(starCount * 3);
+
+            for (let i = 0; i < starCount * 3; i += 3) {
+                // 银河系螺旋分布
+                const radius = Math.random() * 30 + 5;
+                const angle = Math.random() * Math.PI * 2 + (radius * 0.1);
+                const height = (Math.random() - 0.5) * 8;
+
+                positions[i] = Math.cos(angle) * radius;
+                positions[i + 1] = height;
+                positions[i + 2] = Math.sin(angle) * radius - 15;
+
+                // 星星颜色：白色、淡紫色、淡蓝色
+                const colorType = Math.random();
+                if (colorType < 0.5) {
+                    colors[i] = 1; colors[i + 1] = 1; colors[i + 2] = 1;
+                } else if (colorType < 0.75) {
+                    colors[i] = 0.9; colors[i + 1] = 0.7; colors[i + 2] = 1;
+                } else {
+                    colors[i] = 0.7; colors[i + 1] = 0.85; colors[i + 2] = 1;
+                }
+            }
+
+            starsGeometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+            starsGeometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+
+            const starsMaterial = new THREE.PointsMaterial({
+                size: 0.08,
+                vertexColors: true,
+                transparent: true,
+                opacity: 0.9
+            });
+
+            const starField = new THREE.Points(starsGeometry, starsMaterial);
+            starField.name = 'starfield';
+            scene.add(starField);
+
+            // 星云效果
+            const nebulaGeometry = new THREE.BufferGeometry();
+            const nebulaCount = 300;
+            const nebulaPositions = new Float32Array(nebulaCount * 3);
+
+            for (let i = 0; i < nebulaCount * 3; i += 3) {
+                nebulaPositions[i] = (Math.random() - 0.5) * 50;
+                nebulaPositions[i + 1] = (Math.random() - 0.5) * 30;
+                nebulaPositions[i + 2] = (Math.random() - 0.5) * 40 - 20;
+            }
+
+            nebulaGeometry.setAttribute('position', new THREE.BufferAttribute(nebulaPositions, 3));
+
+            const nebulaMaterial = new THREE.PointsMaterial({
+                size: 0.8,
+                color: 0x8060b0,
+                transparent: true,
+                opacity: 0.15,
+                blending: THREE.AdditiveBlending
+            });
+
+            const nebula = new THREE.Points(nebulaGeometry, nebulaMaterial);
+            nebula.name = 'nebula';
+            scene.add(nebula);
+        }
+
+        function createPlanets() {
+            const orbitRadius = 7;
+
+            mbtiOrder.forEach((mbti, index) => {
+                const data = mbtiPlanets[mbti];
+                const angle = (index / mbtiOrder.length) * Math.PI * 2;
+
+                // 螺旋轨道分布
+                const layerOffset = (index % 4) * 0.6;
+                const orbitRadiusAdjusted = orbitRadius - (index % 3) * 1.2;
+                const x = Math.cos(angle + layerOffset) * orbitRadiusAdjusted;
+                const y = Math.sin(angle + layerOffset * 1.5) * (orbitRadiusAdjusted * 0.8);
+                const z = (index % 5 - 2) * 1.8;
+
+                // 根据MBTI类型创建不同的星球
+                const planet = createPlanetByType(mbti, data, index);
+                planet.position.set(x, y, z);
+                planet.userData = {
+                    mbti: mbti,
+                    data: data,
+                    index: index,
+                    originalPos: { x, y, z },
+                    angle: angle + layerOffset
+                };
+
+                planets.push(planet);
+                scene.add(planet);
+            });
+        }
+
+        function createPlanetByType(mbti, data, index) {
+            const group = new THREE.Group();
+            const baseSize = 0.55 + Math.random() * 0.25;
+
+            // 基础几何体
+            let geometry;
+            switch (data.shape) {
+                case 'hexagon':
+                    geometry = new THREE.CylinderGeometry(baseSize, baseSize, baseSize * 0.4, 6);
+                    break;
+                case 'octagon':
+                    geometry = new THREE.CylinderGeometry(baseSize, baseSize, baseSize * 0.35, 8);
+                    break;
+                case 'soft-ellipse':
+                    geometry = new THREE.SphereGeometry(baseSize, 32, 32);
+                    geometry.scale(1, 1.15, 0.95);
+                    break;
+                case 'comet':
+                case 'meteor':
+                    geometry = new THREE.SphereGeometry(baseSize, 32, 32);
+                    geometry.scale(1.1, 1, 0.9);
+                    break;
+                case 'irregular':
+                    geometry = new THREE.IcosahedronGeometry(baseSize, 1);
+                    break;
+                default:
+                    geometry = new THREE.SphereGeometry(baseSize, 48, 48);
+            }
+
+            // 材质
+            const material = new THREE.MeshStandardMaterial({
+                color: data.color,
+                emissive: data.color,
+                emissiveIntensity: 0.25,
+                roughness: 0.5,
+                metalness: 0.15
+            });
+
+            const mainSphere = new THREE.Mesh(geometry, material);
+            group.add(mainSphere);
+
+            // 发光环
+            const ringGeometry = new THREE.TorusGeometry(baseSize * 1.45, 0.04, 8, 48);
+            const ringMaterial = new THREE.MeshBasicMaterial({
+                color: data.color,
+                transparent: true,
+                opacity: 0.5,
+                side: THREE.DoubleSide
+            });
+            const ring = new THREE.Mesh(ringGeometry, ringMaterial);
+            ring.rotation.x = Math.PI / 2 + (index * 0.2);
+            ring.rotation.z = index * 0.15;
+            group.add(ring);
+
+            // 外发光效果
+            const glowGeometry = new THREE.SphereGeometry(baseSize * 1.3, 32, 32);
+            const glowMaterial = new THREE.MeshBasicMaterial({
+                color: data.color,
+                transparent: true,
+                opacity: 0.12,
+                side: THREE.BackSide
+            });
+            const glow = new THREE.Mesh(glowGeometry, glowMaterial);
+            group.add(glow);
+
+            // MBTI 文字标签
+            const canvas = document.createElement('canvas');
+            canvas.width = 512;
+            canvas.height = 256;
+            const ctx = canvas.getContext('2d');
+
+            // 背景透明
+            ctx.clearRect(0, 0, 512, 256);
+
+            // MBTI文字
+            ctx.fillStyle = 'rgba(255,255,255,0.98)';
+            ctx.font = 'bold 120px Microsoft YaHei';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.shadowColor = data.glowColor;
+            ctx.shadowBlur = 20;
+            ctx.fillText(mbti, 256, 128);
+
+            const texture = new THREE.CanvasTexture(canvas);
+            const spriteMaterial = new THREE.SpriteMaterial({
+                map: texture,
+                transparent: true,
+                depthWrite: false
+            });
+            const sprite = new THREE.Sprite(spriteMaterial);
+            sprite.scale.set(1.8, 0.7, 1);
+            sprite.position.z = baseSize + 0.2;
+            group.add(sprite);
+
+            // 根据类型添加特殊装饰
+            addSpecialDecorations(group, data, baseSize, index);
+
+            return group;
+        }
+
+        function addSpecialDecorations(group, data, baseSize, index) {
+            // 特殊装饰（简化版）
+            const style = data.style;
+
+            // 围绕的小粒子
+            const particleCount = 6 + (index % 4);
+            for (let i = 0; i < particleCount; i++) {
+                const particleGeom = new THREE.SphereGeometry(0.04 + Math.random() * 0.04, 8, 8);
+                const particleMat = new THREE.MeshBasicMaterial({
+                    color: data.color,
+                    transparent: true,
+                    opacity: 0.7
+                });
+                const particle = new THREE.Mesh(particleGeom, particleMat);
+
+                const angle = (i / particleCount) * Math.PI * 2;
+                const dist = baseSize * 1.7 + Math.random() * 0.3;
+                particle.position.set(
+                    Math.cos(angle) * dist,
+                    (Math.random() - 0.5) * 0.4,
+                    Math.sin(angle) * dist
+                );
+                particle.userData.orbitAngle = angle;
+                particle.userData.orbitDist = dist;
+                particle.userData.orbitSpeed = 0.5 + Math.random() * 0.5;
+
+                group.add(particle);
+            }
+        }
+
+        let time = 0;
+
+        function animate() {
+            requestAnimationFrame(animate);
+            time += 0.006;
+
+            // 星球轨道运动
+            planets.forEach((planet, i) => {
+                const data = planet.userData;
+                const baseAngle = data.angle;
+                const speed = 0.25 + (i % 4) * 0.08;
+                const angle = baseAngle + time * speed;
+
+                const orbitRadius = 7 - (i % 3) * 1.2;
+                planet.position.x = Math.cos(angle) * orbitRadius;
+                planet.position.y = Math.sin(angle * 0.9) * (orbitRadius * 0.75);
+                planet.position.z = data.originalPos.z + Math.sin(time * 2 + i * 0.6) * 0.4;
+
+                // 自转
+                planet.rotation.y += 0.008;
+
+                // 小粒子轨道运动
+                planet.children.forEach(child => {
+                    if (child.userData && child.userData.orbitAngle !== undefined) {
+                        child.userData.orbitAngle += 0.01 * child.userData.orbitSpeed;
+                        child.position.x = Math.cos(child.userData.orbitAngle) * child.userData.orbitDist;
+                        child.position.z = Math.sin(child.userData.orbitAngle) * child.userData.orbitDist;
+                    }
+                });
+
+                // 悬浮效果
+                planet.position.y += Math.sin(time * 2.5 + i * 0.7) * 0.15;
+            });
+
+            // 星空缓慢旋转
+            const starfield = scene.getObjectByName('starfield');
+            if (starfield) {
+                starfield.rotation.z += 0.0002;
+            }
+            const nebula = scene.getObjectByName('nebula');
+            if (nebula) {
+                nebula.rotation.z -= 0.0001;
+            }
+
+            renderer.render(scene, camera);
+        }
+
+        function onMouseMove(event) {
+            mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+            mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+
+            raycaster.setFromCamera(mouse, camera);
+
+            // 检测所有星球（包括子对象）
+            let allMeshes = [];
+            planets.forEach(planet => {
+                planet.traverse(child => {
+                    if (child.isMesh) {
+                        child.userData.parentPlanet = planet;
+                        allMeshes.push(child);
+                    }
+                });
+            });
+
+            const intersects = raycaster.intersectObjects(allMeshes);
+            const tooltip = document.getElementById('planetTooltip');
+
+            if (intersects.length > 0) {
+                const mesh = intersects[0].object;
+                const planet = mesh.userData.parentPlanet;
+
+                if (planet && planet.userData && planet.userData.mbti) {
+                    if (hoveredPlanet !== planet) {
+                        hoveredPlanet = planet;
+                        const data = planet.userData.data;
+                        const mbti = planet.userData.mbti;
+
+                        // 更新提示卡片
+                        document.getElementById('tooltipMbti').textContent = mbti;
+                        document.getElementById('tooltipMbti').style.color = data.glowColor;
+                        document.getElementById('tooltipName').textContent = data.name + ' · ' + data.title;
+                        document.getElementById('tooltipDesc').textContent = data.desc;
+                        document.getElementById('tooltipCount').textContent = `👥 ${data.online} 人在线`;
+                        document.getElementById('tooltipCount').style.color = data.glowColor;
+
+                        tooltip.classList.add('show');
+                        document.body.style.cursor = 'pointer';
+                    }
+
+                    tooltip.style.left = Math.min(event.clientX + 20, window.innerWidth - 250) + 'px';
+                    tooltip.style.top = Math.min(event.clientY - 10, window.innerHeight - 250) + 'px';
+                }
+            } else {
+                hoveredPlanet = null;
+                tooltip.classList.remove('show');
+                document.body.style.cursor = 'default';
+            }
+        }
+
+        function onMouseClick(event) {
+            if (hoveredPlanet && hoveredPlanet.userData && hoveredPlanet.userData.mbti) {
+                const mbti = hoveredPlanet.userData.mbti;
+                window.location.href = `chat-flower.html?mbti=${mbti}`;
+            }
+        }
+
+        function onWindowResize() {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        }
+
+        function switchTab(tab) {
+            if (tab === 'planet') {
+                alert('当前就在星球大厅~ 🌟');
+            } else if (tab === 'friend') {
+                window.location.href = 'friend.html';
+            } else if (tab === 'profile') {
+                window.location.href = 'profile.html';
+            }
+        }
+
+        function initUser() {
+            const savedUser = localStorage.getItem('mbtiUser');
+            if (savedUser) {
+                try {
+                    const user = JSON.parse(savedUser);
+                    document.getElementById('userName').textContent = user.nickname || '小星人';
+                    document.getElementById('userMbti').textContent = user.mbti || 'INFP';
+                    document.getElementById('userAvatar').textContent = (user.nickname || '星').charAt(0);
+                } catch(e) {}
+            }
+        }
+
+        // Socket.io 连接
+        let socket;
+        function initSocket() {
+            if (typeof io === 'undefined') {
+                console.log('Socket.io未加载，使用本地模式');
+                return;
+            }
+            try {
+                socket = io();
+
+                socket.on('connect', () => {
+                    console.log('已连接到服务器');
+                });
+
+                socket.on('userJoined', (user) => {
+                    console.log(user.nickname, '加入了');
+                });
+
+                socket.on('userLeft', (userId) => {
+                    console.log('用户离开了');
+                });
+            } catch(e) {
+                console.log('Socket.io未连接，使用本地模式');
+            }
+        }
+
+        initThree();
+        initUser();
+        initSocket();
+    </script>
+</body>
+</html>

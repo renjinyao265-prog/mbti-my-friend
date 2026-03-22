@@ -1,0 +1,564 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MBTI 交友云</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            min-height: 100vh;
+            font-family: 'Microsoft YaHei', 'PingFang SC', sans-serif;
+            background: linear-gradient(135deg, #87CEEB 0%, #b0d0ff 30%, #d0c0ff 60%, #e0c0ff 100%);
+            overflow-x: hidden;
+        }
+
+        /* 顶部导航 */
+        .top-nav {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            padding: 20px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 100;
+            background: linear-gradient(to bottom, rgba(100,150,255,0.4), transparent);
+        }
+
+        .back-btn {
+            background: rgba(255,255,255,0.3);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.4);
+            color: #3a5a8a;
+            padding: 10px 22px;
+            border-radius: 18px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .back-btn:hover {
+            background: rgba(255,255,255,0.5);
+            transform: scale(1.05);
+        }
+
+        .logo {
+            color: white;
+            font-size: 22px;
+            font-weight: 700;
+            letter-spacing: 4px;
+            text-shadow: 0 2px 15px rgba(0,80,150,0.3);
+        }
+
+        /* 主内容 */
+        .main-content {
+            padding-top: 100px;
+            padding-bottom: 50px;
+        }
+
+        /* 页面标题 */
+        .page-title {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .page-title h1 {
+            color: #2a4a7a;
+            font-size: 32px;
+            letter-spacing: 6px;
+            margin-bottom: 10px;
+        }
+
+        .page-title p {
+            color: #5a7aaa;
+            font-size: 15px;
+        }
+
+        /* MBTI 选择区域 */
+        .select-section {
+            max-width: 500px;
+            margin: 0 auto 50px;
+            background: rgba(255,255,255,0.6);
+            backdrop-filter: blur(20px);
+            border-radius: 30px;
+            padding: 35px;
+            box-shadow: 0 20px 60px rgba(0,80,150,0.15);
+        }
+
+        .select-section h2 {
+            text-align: center;
+            color: #3a5a8a;
+            font-size: 18px;
+            margin-bottom: 25px;
+        }
+
+        .mbti-selector {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 12px;
+        }
+
+        .mbti-option {
+            padding: 15px 10px;
+            border: 2px solid rgba(100,150,255,0.3);
+            border-radius: 16px;
+            background: rgba(255,255,255,0.7);
+            color: #4a6aaa;
+            font-size: 15px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: center;
+            letter-spacing: 2px;
+        }
+
+        .mbti-option:hover {
+            border-color: rgba(100,150,255,0.6);
+            background: rgba(200,220,255,0.6);
+            transform: translateY(-3px);
+        }
+
+        .mbti-option.selected {
+            border-color: #6080ff;
+            background: linear-gradient(135deg, #a0c0ff 0%, #8090ff 100%);
+            color: white;
+            box-shadow: 0 8px 25px rgba(100,130,255,0.4);
+            transform: translateY(-3px);
+        }
+
+        .find-btn {
+            width: 100%;
+            margin-top: 25px;
+            padding: 16px;
+            border: none;
+            border-radius: 18px;
+            background: linear-gradient(135deg, #6080ff 0%, #5060e0 50%, #4050d0 100%);
+            color: white;
+            font-size: 17px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 10px 30px rgba(80,100,220,0.4);
+            letter-spacing: 4px;
+        }
+
+        .find-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 40px rgba(80,100,220,0.5);
+        }
+
+        /* 结果区域 */
+        .results-section {
+            display: none;
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        .results-section.show {
+            display: block;
+            animation: fadeInUp 0.5s ease;
+        }
+
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* 两个云朵 */
+        .clouds-container {
+            display: flex;
+            gap: 30px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .cloud-card {
+            flex: 1;
+            min-width: 350px;
+            max-width: 420px;
+            background: rgba(255,255,255,0.7);
+            backdrop-filter: blur(20px);
+            border-radius: 40px;
+            padding: 35px;
+            box-shadow: 0 25px 70px rgba(0,80,150,0.15);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .cloud-card::before {
+            content: '';
+            position: absolute;
+            top: -20px;
+            left: 30px;
+            width: 80px;
+            height: 80px;
+            background: rgba(255,255,255,0.4);
+            border-radius: 50%;
+        }
+
+        .cloud-card::after {
+            content: '';
+            position: absolute;
+            top: -10px;
+            left: 80px;
+            width: 60px;
+            height: 60px;
+            background: rgba(255,255,255,0.3);
+            border-radius: 50%;
+        }
+
+        .cloud-card.friend {
+            border: 3px solid rgba(100,200,255,0.4);
+        }
+
+        .cloud-card.lover {
+            border: 3px solid rgba(255,150,180,0.4);
+        }
+
+        .cloud-icon {
+            font-size: 45px;
+            margin-bottom: 15px;
+        }
+
+        .cloud-title {
+            font-size: 22px;
+            font-weight: 800;
+            margin-bottom: 8px;
+        }
+
+        .cloud-card.friend .cloud-title {
+            color: #3a8aca;
+        }
+
+        .cloud-card.lover .cloud-title {
+            color: #ca5a8a;
+        }
+
+        .cloud-desc {
+            color: #7a8aaa;
+            font-size: 14px;
+            margin-bottom: 25px;
+        }
+
+        /* MBTI 匹配列表 */
+        .match-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .match-item {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding: 15px 18px;
+            background: rgba(255,255,255,0.7);
+            border-radius: 18px;
+            transition: all 0.3s ease;
+        }
+
+        .match-item:hover {
+            transform: translateX(5px);
+            background: rgba(255,255,255,0.9);
+        }
+
+        .cloud-card.friend .match-item {
+            border-left: 4px solid #60b0ff;
+        }
+
+        .cloud-card.lover .match-item {
+            border-left: 4px solid #ff80b0;
+        }
+
+        .match-mbti {
+            font-size: 20px;
+            font-weight: 900;
+            min-width: 70px;
+        }
+
+        .cloud-card.friend .match-mbti {
+            color: #3a8aca;
+        }
+
+        .cloud-card.lover .match-mbti {
+            color: #ca5a8a;
+        }
+
+        .match-info {
+            flex: 1;
+        }
+
+        .match-name {
+            font-size: 14px;
+            font-weight: 700;
+            color: #4a5a7a;
+            margin-bottom: 3px;
+        }
+
+        .match-desc {
+            font-size: 12px;
+            color: #8a9ab0;
+        }
+
+        .match-score {
+            font-size: 18px;
+            font-weight: 800;
+        }
+
+        .score-high { color: #40c060; }
+        .score-good { color: #80b040; }
+        .score-ok { color: #c0a040; }
+
+        /* 重新选择按钮 */
+        .reselect-btn {
+            display: block;
+            margin: 40px auto 0;
+            padding: 14px 40px;
+            border: 2px solid rgba(100,150,255,0.4);
+            border-radius: 20px;
+            background: rgba(255,255,255,0.6);
+            color: #4a6aaa;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .reselect-btn:hover {
+            background: rgba(200,220,255,0.7);
+            transform: scale(1.05);
+        }
+
+        /* 装饰云朵 */
+        .deco-cloud {
+            position: fixed;
+            font-size: 80px;
+            opacity: 0.3;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .deco-cloud.c1 { top: 15%; left: 5%; }
+        .deco-cloud.c2 { top: 25%; right: 8%; font-size: 100px; }
+        .deco-cloud.c3 { bottom: 20%; left: 10%; font-size: 70px; }
+        .deco-cloud.c4 { bottom: 30%; right: 5%; }
+    </style>
+</head>
+<body>
+    <div class="deco-cloud c1">☁️</div>
+    <div class="deco-cloud c2">☁️</div>
+    <div class="deco-cloud c3">☁️</div>
+    <div class="deco-cloud c4">☁️</div>
+
+    <nav class="top-nav">
+        <button class="back-btn" onclick="goBack()">← 返回星球大厅</button>
+        <div class="logo">☁️ MBTI 交友云</div>
+        <div style="width:100px;"></div>
+    </nav>
+
+    <div class="main-content">
+        <div class="page-title">
+            <h1>找到你的同频之人</h1>
+            <p>选择你的 MBTI，为你推荐最匹配的朋友和另一半</p>
+        </div>
+
+        <!-- MBTI 选择 -->
+        <div class="select-section" id="selectSection">
+            <h2>✨ 你的 MBTI 是？</h2>
+            <div class="mbti-selector" id="mbtiSelector"></div>
+            <button class="find-btn" onclick="findMatches()">🔮 开始匹配</button>
+        </div>
+
+        <!-- 匹配结果 -->
+        <div class="results-section" id="resultsSection">
+            <div class="clouds-container">
+                <!-- 朋友 -->
+                <div class="cloud-card friend">
+                    <div class="cloud-icon">👥</div>
+                    <div class="cloud-title">你想要找的是朋友</div>
+                    <div class="cloud-desc">这些类型和你最能成为好朋友</div>
+                    <div class="match-list" id="friendList"></div>
+                </div>
+
+                <!-- 另一半 -->
+                <div class="cloud-card lover">
+                    <div class="cloud-icon">💕</div>
+                    <div class="cloud-title">你想了解你可能喜欢的人</div>
+                    <div class="cloud-desc">这些类型和你最有化学反应</div>
+                    <div class="match-list" id="loverList"></div>
+                </div>
+            </div>
+
+            <button class="reselect-btn" onclick="showSelect()">← 重新选择 MBTI</button>
+        </div>
+    </div>
+
+    <script>
+        // MBTI 数据
+        const mbtiData = {
+            INTJ: { name: '战略家', desc: '高冷智慧的战略家' },
+            INTP: { name: '逻辑家', desc: '脑洞大开的思考者' },
+            ENTJ: { name: '统帅', desc: '气场全开的领导者' },
+            ENTP: { name: '辩论家', desc: '脑洞无限的辩论家' },
+            INFJ: { name: '洞察者', desc: '温柔治愈的洞察者' },
+            INFP: { name: '理想家', desc: '浪漫敏感的理想主义者' },
+            ENFJ: { name: '引导者', desc: '温暖包容的引导者' },
+            ENFP: { name: '逐梦者', desc: '热情活泼的逐梦者' },
+            ISTJ: { name: '检查者', desc: '严谨可靠的秩序者' },
+            ISFJ: { name: '守卫者', desc: '温暖贴心的守护者' },
+            ESTJ: { name: '管理者', desc: '规则至上的管理者' },
+            ESFJ: { name: '执政官', desc: '暖心社交的执政官' },
+            ISTP: { name: '鉴赏家', desc: '酷感实干的工匠' },
+            ISFP: { name: '探险家', desc: '温柔审美的艺术家' },
+            ESTP: { name: '企业家', desc: '热血行动的冒险家' },
+            ESFP: { name: '表演者', desc: '派对中心的表演者' }
+        };
+
+        // 友谊匹配（高到低）
+        const friendMatches = {
+            INTJ: ['INTP', 'ENTJ', 'ENTP', 'INFJ', 'INTJ'],
+            INTP: ['INTJ', 'ENTP', 'INTP', 'ENTJ', 'INFP'],
+            ENTJ: ['INTJ', 'ENTJ', 'ENTP', 'ESTJ', 'ENFJ'],
+            ENTP: ['ENTP', 'INTP', 'ENTJ', 'ENFP', 'INTJ'],
+            INFJ: ['INFP', 'ENFJ', 'INTJ', 'INFJ', 'ISFJ'],
+            INFP: ['INFJ', 'ENFP', 'INFP', 'ISFP', 'INTP'],
+            ENFJ: ['ENFJ', 'INFJ', 'ESFJ', 'ENFP', 'ENTJ'],
+            ENFP: ['ENFP', 'INFP', 'ENFJ', 'ENTP', 'ESFP'],
+            ISTJ: ['ISTJ', 'ISFJ', 'ESTJ', 'INTJ', 'ISTP'],
+            ISFJ: ['ISFJ', 'ISTJ', 'ESFJ', 'INFJ', 'ISFP'],
+            ESTJ: ['ESTJ', 'ISTJ', 'ESFJ', 'ENTJ', 'ESTP'],
+            ESFJ: ['ESFJ', 'ISFJ', 'ESTJ', 'ENFJ', 'ESFP'],
+            ISTP: ['ISTP', 'ESTP', 'ISFP', 'INTP', 'ISTJ'],
+            ISFP: ['ISFP', 'ISTP', 'INFP', 'ESFP', 'ISFJ'],
+            ESTP: ['ESTP', 'ISTP', 'ESFP', 'ESTJ', 'ENTP'],
+            ESFP: ['ESFP', 'ESTP', 'ISFP', 'ENFP', 'ESFJ']
+        };
+
+        // 爱情匹配（高到低）
+        const loverMatches = {
+            INTJ: ['ENFP', 'ENTP', 'INFJ', 'INTJ', 'INTP'],
+            INTP: ['ENTP', 'ENFP', 'INFJ', 'INTP', 'INTJ'],
+            ENTJ: ['INFP', 'ENFP', 'ENTJ', 'INTJ', 'ENFJ'],
+            ENTP: ['INFJ', 'INFP', 'ENTP', 'INTJ', 'ENFP'],
+            INFJ: ['ENTP', 'ENFP', 'INFJ', 'INTJ', 'INFP'],
+            INFP: ['ENTJ', 'ENFJ', 'INFP', 'INFJ', 'ENFP'],
+            ENFJ: ['INFP', 'ISFP', 'ENFJ', 'INFJ', 'ENTJ'],
+            ENFP: ['INTJ', 'INFJ', 'ENFP', 'ENTP', 'INFP'],
+            ISTJ: ['ESFP', 'ESTP', 'ISTJ', 'ISFJ', 'ESTJ'],
+            ISFJ: ['ESTP', 'ESFP', 'ISFJ', 'ISTJ', 'ESFJ'],
+            ESTJ: ['ISFP', 'INFP', 'ESTJ', 'ISTJ', 'ESFJ'],
+            ESFJ: ['ISTP', 'ESTP', 'ESFJ', 'ISFJ', 'ESTJ'],
+            ISTP: ['ESFJ', 'ISFJ', 'ISTP', 'ESTP', 'ISFP'],
+            ISFP: ['ESTJ', 'ESFJ', 'ISFP', 'ISTP', 'ESFP'],
+            ESTP: ['ISFJ', 'INFJ', 'ESTP', 'ISTP', 'ESFP'],
+            ESFP: ['ISTJ', 'INTJ', 'ESFP', 'ESTP', 'ISFP']
+        };
+
+        let selectedMbti = '';
+
+        // 初始化
+        function init() {
+            renderMbtiOptions();
+            loadSavedUser();
+        }
+
+        function renderMbtiOptions() {
+            const container = document.getElementById('mbtiSelector');
+            const types = Object.keys(mbtiData);
+            container.innerHTML = types.map(mbti => `
+                <div class="mbti-option" data-mbti="${mbti}" onclick="selectMbti('${mbti}')">
+                    ${mbti}
+                </div>
+            `).join('');
+        }
+
+        function selectMbti(mbti) {
+            selectedMbti = mbti;
+            document.querySelectorAll('.mbti-option').forEach(el => {
+                el.classList.toggle('selected', el.dataset.mbti === mbti);
+            });
+        }
+
+        function findMatches() {
+            if (!selectedMbti) {
+                alert('请先选择你的 MBTI！');
+                return;
+            }
+
+            renderFriendList();
+            renderLoverList();
+
+            document.getElementById('selectSection').style.display = 'none';
+            document.getElementById('resultsSection').classList.add('show');
+        }
+
+        function renderFriendList() {
+            const container = document.getElementById('friendList');
+            const matches = friendMatches[selectedMbti] || [];
+            container.innerHTML = matches.map((mbti, i) => {
+                const score = i === 0 ? 98 : i === 1 ? 90 : i === 2 ? 82 : i === 3 ? 75 : 68;
+                const scoreClass = score >= 90 ? 'score-high' : score >= 75 ? 'score-good' : 'score-ok';
+                return `
+                    <div class="match-item">
+                        <div class="match-mbti">${mbti}</div>
+                        <div class="match-info">
+                            <div class="match-name">${mbtiData[mbti].name}</div>
+                            <div class="match-desc">${mbtiData[mbti].desc}</div>
+                        </div>
+                        <div class="match-score ${scoreClass}">${score}%</div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function renderLoverList() {
+            const container = document.getElementById('loverList');
+            const matches = loverMatches[selectedMbti] || [];
+            container.innerHTML = matches.map((mbti, i) => {
+                const score = i === 0 ? 98 : i === 1 ? 90 : i === 2 ? 82 : i === 3 ? 75 : 68;
+                const scoreClass = score >= 90 ? 'score-high' : score >= 75 ? 'score-good' : 'score-ok';
+                return `
+                    <div class="match-item">
+                        <div class="match-mbti">${mbti}</div>
+                        <div class="match-info">
+                            <div class="match-name">${mbtiData[mbti].name}</div>
+                            <div class="match-desc">${mbtiData[mbti].desc}</div>
+                        </div>
+                        <div class="match-score ${scoreClass}">${score}%</div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function showSelect() {
+            document.getElementById('resultsSection').classList.remove('show');
+            document.getElementById('selectSection').style.display = 'block';
+        }
+
+        function goBack() {
+            window.location.href = 'home.html';
+        }
+
+        function loadSavedUser() {
+            const saved = localStorage.getItem('mbtiUser');
+            if (saved) {
+                try {
+                    const user = JSON.parse(saved);
+                    if (user.mbti) {
+                        selectMbti(user.mbti);
+                    }
+                } catch(e) {}
+            }
+        }
+
+        init();
+    </script>
+</body>
+</html>

@@ -1,0 +1,665 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MBTI 星球交友 - 登录</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            overflow: hidden;
+            font-family: 'Microsoft YaHei', 'PingFang SC', sans-serif;
+        }
+
+        /* Three.js 画布 */
+        #canvas-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+        }
+
+        /* 背景叠加层 */
+        .bg-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(to bottom,
+                #87CEEB 0%,
+                #B0E0E6 25%,
+                #DDA0DD 60%,
+                #DA70D6 85%,
+                #BA55D3 100%);
+            opacity: 0.85;
+            z-index: 1;
+            pointer-events: none;
+        }
+
+        /* 登录卡片 */
+        .login-card {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 420px;
+            background: rgba(255, 255, 255, 0.92);
+            backdrop-filter: blur(20px);
+            border-radius: 30px;
+            padding: 45px 40px;
+            box-shadow:
+                0 25px 80px rgba(0, 0, 0, 0.25),
+                0 0 0 1px rgba(255, 255, 255, 0.5) inset;
+            z-index: 10;
+        }
+
+        .login-card h1 {
+            text-align: center;
+            font-size: 28px;
+            color: #5a3d7a;
+            margin-bottom: 10px;
+            letter-spacing: 4px;
+        }
+
+        .login-card .subtitle {
+            text-align: center;
+            color: #9a7ab0;
+            font-size: 14px;
+            margin-bottom: 35px;
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+        }
+
+        .form-group label {
+            display: block;
+            color: #6a4a8a;
+            font-size: 14px;
+            margin-bottom: 8px;
+            font-weight: 500;
+        }
+
+        .input-field {
+            width: 100%;
+            padding: 14px 18px;
+            border: 2px solid #e8d8f0;
+            border-radius: 16px;
+            font-size: 15px;
+            color: #5a3d7a;
+            background: rgba(255, 255, 255, 0.9);
+            transition: all 0.3s ease;
+            outline: none;
+        }
+
+        .input-field:focus {
+            border-color: #c080e0;
+            box-shadow: 0 0 0 4px rgba(192, 128, 224, 0.2);
+        }
+
+        .input-field::placeholder {
+            color: #b0a0c0;
+        }
+
+        .gender-options {
+            display: flex;
+            gap: 15px;
+        }
+
+        .gender-btn {
+            flex: 1;
+            padding: 14px;
+            border: 2px solid #e8d8f0;
+            border-radius: 16px;
+            background: rgba(255, 255, 255, 0.9);
+            color: #8a6aa0;
+            font-size: 15px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .gender-btn:hover {
+            border-color: #d0a0e0;
+            background: rgba(240, 220, 255, 0.5);
+        }
+
+        .gender-btn.selected {
+            border-color: #b060d0;
+            background: linear-gradient(135deg, #f0d0ff 0%, #e0b0ff 100%);
+            color: #6a3a8a;
+            box-shadow: 0 5px 20px rgba(176, 96, 208, 0.3);
+        }
+
+        .mbti-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+        }
+
+        .mbti-btn {
+            padding: 12px 8px;
+            border: 2px solid #e8d8f0;
+            border-radius: 12px;
+            background: rgba(255, 255, 255, 0.9);
+            color: #8a6aa0;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            letter-spacing: 1px;
+        }
+
+        .mbti-btn:hover {
+            border-color: #d0a0e0;
+            background: rgba(240, 220, 255, 0.5);
+            transform: translateY(-2px);
+        }
+
+        .mbti-btn.selected {
+            border-color: #b060d0;
+            background: linear-gradient(135deg, #f0d0ff 0%, #d090f0 100%);
+            color: #5a2a8a;
+            box-shadow: 0 5px 15px rgba(176, 96, 208, 0.35);
+        }
+
+        .test-link {
+            text-align: center;
+            margin-top: 15px;
+        }
+
+        .test-link a {
+            color: #a060c0;
+            font-size: 13px;
+            text-decoration: none;
+            transition: color 0.3s;
+        }
+
+        .test-link a:hover {
+            color: #c040e0;
+            text-decoration: underline;
+        }
+
+        .submit-btn {
+            width: 100%;
+            padding: 16px;
+            margin-top: 10px;
+            border: none;
+            border-radius: 18px;
+            background: linear-gradient(135deg, #9b59b6 0%, #8e44ad 50%, #7d3c98 100%);
+            color: white;
+            font-size: 17px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 8px 25px rgba(142, 68, 173, 0.4);
+            letter-spacing: 3px;
+        }
+
+        .submit-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 12px 35px rgba(142, 68, 173, 0.5);
+        }
+
+        .submit-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .steps {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 25px;
+        }
+
+        .step-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: #d8c8e0;
+            transition: all 0.3s ease;
+        }
+
+        .step-dot.active {
+            background: #b060d0;
+            transform: scale(1.3);
+            box-shadow: 0 0 10px rgba(176, 96, 208, 0.5);
+        }
+
+        .form-page {
+            display: none;
+            animation: fadeIn 0.4s ease;
+        }
+
+        .form-page.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 12px;
+            margin-top: 10px;
+        }
+
+        .btn-group .submit-btn {
+            flex: 1;
+        }
+
+        .back-btn {
+            padding: 16px 24px;
+            border: 2px solid #d8c8e0;
+            border-radius: 18px;
+            background: rgba(255, 255, 255, 0.8);
+            color: #8a6aa0;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .back-btn:hover {
+            border-color: #b060d0;
+            color: #6a3a8a;
+        }
+
+        .error-msg {
+            color: #e74c3c;
+            font-size: 13px;
+            margin-top: 10px;
+            text-align: center;
+            display: none;
+        }
+
+        .error-msg.show {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <div id="canvas-container"></div>
+    <div class="bg-overlay"></div>
+
+    <div class="login-card">
+        <h1>🌟 MBTI 星球交友</h1>
+        <p class="subtitle">找到与你同频的那颗星球</p>
+
+        <div class="steps">
+            <div class="step-dot active" data-step="1"></div>
+            <div class="step-dot" data-step="2"></div>
+            <div class="step-dot" data-step="3"></div>
+            <div class="step-dot" data-step="4"></div>
+        </div>
+
+        <div class="error-msg" id="errorMsg"></div>
+
+        <!-- 第一页：账号 -->
+        <div class="form-page active" id="page1">
+            <div class="form-group">
+                <label>📧 你的账号（邮箱/QQ）</label>
+                <input type="text" class="input-field" id="account" placeholder="输入邮箱或QQ号，例如：123456@qq.com" oninput="checkAccount()">
+            </div>
+            <div class="form-group" id="existingAccountHint" style="display:none;">
+                <div style="background: rgba(160,200,255,0.2); padding:12px; border-radius:12px; color:#4a6aaa; font-size:13px;">
+                    💡 发现你之前登录过，已自动填充信息~
+                </div>
+            </div>
+
+            <button class="submit-btn" onclick="nextPage(2)">下一步 →</button>
+        </div>
+
+        <!-- 第二页：出生年份和性别 -->
+        <div class="form-page" id="page2">
+            <div class="form-group">
+                <label>🎂 你的出生年份</label>
+                <input type="number" class="input-field" id="birthYear" placeholder="例如：2000" min="1970" max="2010">
+            </div>
+
+            <div class="form-group">
+                <label>👤 你的性别</label>
+                <div class="gender-options">
+                    <button class="gender-btn" data-gender="female">👧 女生</button>
+                    <button class="gender-btn" data-gender="male">👦 男生</button>
+                    <button class="gender-btn" data-gender="other">🌈 其他</button>
+                </div>
+            </div>
+
+            <div class="btn-group">
+                <button class="back-btn" onclick="prevPage(1)">← 返回</button>
+                <button class="submit-btn" onclick="nextPage(3)">下一步 →</button>
+            </div>
+        </div>
+
+        <!-- 第三页：MBTI -->
+        <div class="form-page" id="page3">
+            <div class="form-group">
+                <label>✨ 你的 MBTI 类型</label>
+                <div class="mbti-grid">
+                    <button class="mbti-btn" data-mbti="INTJ">INTJ</button>
+                    <button class="mbti-btn" data-mbti="INTP">INTP</button>
+                    <button class="mbti-btn" data-mbti="ENTJ">ENTJ</button>
+                    <button class="mbti-btn" data-mbti="ENTP">ENTP</button>
+                    <button class="mbti-btn" data-mbti="INFJ">INFJ</button>
+                    <button class="mbti-btn" data-mbti="INFP">INFP</button>
+                    <button class="mbti-btn" data-mbti="ENFJ">ENFJ</button>
+                    <button class="mbti-btn" data-mbti="ENFP">ENFP</button>
+                    <button class="mbti-btn" data-mbti="ISTJ">ISTJ</button>
+                    <button class="mbti-btn" data-mbti="ISFJ">ISFJ</button>
+                    <button class="mbti-btn" data-mbti="ESTJ">ESTJ</button>
+                    <button class="mbti-btn" data-mbti="ESFJ">ESFJ</button>
+                    <button class="mbti-btn" data-mbti="ISTP">ISTP</button>
+                    <button class="mbti-btn" data-mbti="ISFP">ISFP</button>
+                    <button class="mbti-btn" data-mbti="ESTP">ESTP</button>
+                    <button class="mbti-btn" data-mbti="ESFP">ESFP</button>
+                </div>
+                <div class="test-link">
+                    <a href="https://www.16personalities.com/ch" target="_blank">🔗 还没测过？点击去测试 →</a>
+                </div>
+            </div>
+
+            <div class="btn-group">
+                <button class="back-btn" onclick="prevPage(2)">← 返回</button>
+                <button class="submit-btn" onclick="nextPage(4)">下一步 →</button>
+            </div>
+        </div>
+
+        <!-- 第四页：昵称和自我介绍 -->
+        <div class="form-page" id="page4">
+            <div class="form-group">
+                <label>🌸 你的昵称</label>
+                <input type="text" class="input-field" id="nickname" placeholder="给你自己起个可爱的名字吧">
+            </div>
+
+            <div class="form-group">
+                <label>📝 一句自我介绍（选填）</label>
+                <input type="text" class="input-field" id="bio" placeholder="让大家认识一下你~">
+            </div>
+
+            <div class="btn-group">
+                <button class="back-btn" onclick="prevPage(3)">← 返回</button>
+                <button class="submit-btn" id="loginBtn" onclick="submitForm()">✨ 进入星球 ✨</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script>
+        let currentPage = 1;
+        let formData = {
+            account: '',
+            birthYear: '',
+            gender: '',
+            mbti: '',
+            nickname: '',
+            bio: ''
+        };
+
+        // ========== 账号系统 ==========
+        // 检查是否已登录，如果是则自动跳转
+        function checkAutoLogin() {
+            const currentAccount = localStorage.getItem('mbtiCurrentAccount');
+            if (currentAccount) {
+                const accounts = getAccounts();
+                if (accounts[currentAccount]) {
+                    // 自动登录
+                    const user = accounts[currentAccount];
+                    localStorage.setItem('mbtiUser', JSON.stringify(user));
+                    localStorage.setItem('mbtiToken', user.account);
+                    window.location.href = 'home.html';
+                }
+            }
+        }
+
+        // 获取所有账号
+        function getAccounts() {
+            try {
+                return JSON.parse(localStorage.getItem('mbtiAccounts') || '{}');
+            } catch (e) {
+                return {};
+            }
+        }
+
+        // 保存账号
+        function saveAccount(user) {
+            const accounts = getAccounts();
+            accounts[user.account] = user;
+            localStorage.setItem('mbtiAccounts', JSON.stringify(accounts));
+            localStorage.setItem('mbtiCurrentAccount', user.account);
+        }
+
+        // 检查账号是否存在，存在则自动填充
+        function checkAccount() {
+            const account = document.getElementById('account').value.trim();
+            if (!account) return;
+
+            const accounts = getAccounts();
+            const hintEl = document.getElementById('existingAccountHint');
+
+            if (accounts[account]) {
+                // 账号存在，自动填充
+                const existingUser = accounts[account];
+                formData.account = account;
+                formData.birthYear = existingUser.birthYear || '';
+                formData.gender = existingUser.gender || '';
+                formData.mbti = existingUser.mbti || '';
+                formData.nickname = existingUser.nickname || '';
+                formData.bio = existingUser.bio || '';
+
+                // 显示提示
+                hintEl.style.display = 'block';
+            } else {
+                hintEl.style.display = 'none';
+                formData.account = account;
+            }
+        }
+
+        // 填充表单（从已有的账号数据）
+        function fillFormFromExisting() {
+            if (formData.birthYear) {
+                document.getElementById('birthYear').value = formData.birthYear;
+            }
+            if (formData.gender) {
+                document.querySelectorAll('.gender-btn').forEach(b => {
+                    b.classList.toggle('selected', b.dataset.gender === formData.gender);
+                });
+            }
+            if (formData.mbti) {
+                document.querySelectorAll('.mbti-btn').forEach(b => {
+                    b.classList.toggle('selected', b.dataset.mbti === formData.mbti);
+                });
+            }
+            if (formData.nickname) {
+                document.getElementById('nickname').value = formData.nickname;
+            }
+            if (formData.bio) {
+                document.getElementById('bio').value = formData.bio;
+            }
+        }
+
+        function updateSteps() {
+            document.querySelectorAll('.step-dot').forEach((dot, index) => {
+                dot.classList.toggle('active', index + 1 <= currentPage);
+            });
+        }
+
+        function showError(msg) {
+            const el = document.getElementById('errorMsg');
+            el.textContent = msg;
+            el.classList.add('show');
+            setTimeout(() => el.classList.remove('show'), 3000);
+        }
+
+        function nextPage(page) {
+            if (currentPage === 1) {
+                const account = document.getElementById('account').value.trim();
+                if (!account) {
+                    showError('请输入你的账号（邮箱或QQ）');
+                    return;
+                }
+                formData.account = account;
+                // 如果是已有账号，填充表单
+                fillFormFromExisting();
+            } else if (currentPage === 2) {
+                const year = document.getElementById('birthYear').value;
+                if (!year || year < 1970 || year > 2010) {
+                    showError('请输入有效的出生年份（1970-2010）');
+                    return;
+                }
+                if (!formData.gender) {
+                    showError('请选择你的性别');
+                    return;
+                }
+                formData.birthYear = year;
+            } else if (currentPage === 3) {
+                if (!formData.mbti) {
+                    showError('请选择你的 MBTI 类型');
+                    return;
+                }
+            }
+
+            currentPage = page;
+            document.querySelectorAll('.form-page').forEach(p => p.classList.remove('active'));
+            document.getElementById('page' + page).classList.add('active');
+            updateSteps();
+        }
+
+        function prevPage(page) {
+            currentPage = page;
+            document.querySelectorAll('.form-page').forEach(p => p.classList.remove('active'));
+            document.getElementById('page' + page).classList.add('active');
+            updateSteps();
+        }
+
+        async function submitForm() {
+            formData.nickname = document.getElementById('nickname').value;
+            formData.bio = document.getElementById('bio').value;
+
+            if (!formData.nickname) {
+                showError('请输入你的昵称~');
+                return;
+            }
+
+            const btn = document.getElementById('loginBtn');
+            btn.disabled = true;
+            btn.textContent = '登录中...';
+
+            try {
+                const res = await fetch('/api/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(formData)
+                });
+
+                const data = await res.json();
+                if (data.success) {
+                    saveAccount(data.user);
+                    localStorage.setItem('mbtiUser', JSON.stringify(data.user));
+                    localStorage.setItem('mbtiToken', data.user.account);
+                    window.location.href = 'home.html';
+                } else {
+                    showError(data.error || '登录失败');
+                }
+            } catch (e) {
+                // 如果后端没启动，直接用模拟登录
+                console.log('使用模拟登录');
+                const user = { ...formData, id: formData.account };
+                saveAccount(user);
+                localStorage.setItem('mbtiUser', JSON.stringify(user));
+                localStorage.setItem('mbtiToken', user.account);
+                window.location.href = 'home.html';
+            }
+
+            btn.disabled = false;
+            btn.textContent = '✨ 进入星球 ✨';
+        }
+
+        document.querySelectorAll('.gender-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.gender-btn').forEach(b => b.classList.remove('selected'));
+                btn.classList.add('selected');
+                formData.gender = btn.dataset.gender;
+            });
+        });
+
+        document.querySelectorAll('.mbti-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.mbti-btn').forEach(b => b.classList.remove('selected'));
+                btn.classList.add('selected');
+                formData.mbti = btn.dataset.mbti;
+            });
+        });
+
+        let scene, camera, renderer, moon, clouds = [];
+        function initThree() {
+            const container = document.getElementById('canvas-container');
+            scene = new THREE.Scene();
+            camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 100);
+            camera.position.z = 5;
+
+            renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+            container.appendChild(renderer.domElement);
+
+            const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
+            scene.add(ambientLight);
+            const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
+            directionalLight.position.set(5, 5, 5);
+            scene.add(directionalLight);
+
+            const moonGeometry = new THREE.SphereGeometry(0.8, 64, 64);
+            const moonMaterial = new THREE.MeshStandardMaterial({
+                color: 0xf0f0f8,
+                emissive: 0x404060,
+                emissiveIntensity: 0.2,
+                roughness: 0.7,
+                metalness: 0.1
+            });
+            moon = new THREE.Mesh(moonGeometry, moonMaterial);
+            moon.position.set(2.2, 1.8, -2);
+            scene.add(moon);
+
+            const starsGeometry = new THREE.BufferGeometry();
+            const starCount = 500;
+            const positions = new Float32Array(starCount * 3);
+            for (let i = 0; i < starCount * 3; i += 3) {
+                positions[i] = (Math.random() - 0.5) * 15;
+                positions[i + 1] = (Math.random() - 0.5) * 15;
+                positions[i + 2] = (Math.random() - 0.5) * 10 - 3;
+            }
+            starsGeometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+            const starsMaterial = new THREE.PointsMaterial({ color: 0xffffff, size: 0.03, transparent: true, opacity: 0.8 });
+            const starField = new THREE.Points(starsGeometry, starsMaterial);
+            scene.add(starField);
+
+            function animate() {
+                requestAnimationFrame(animate);
+                if (moon) moon.rotation.y += 0.002;
+                renderer.render(scene, camera);
+            }
+            animate();
+
+            window.addEventListener('resize', () => {
+                camera.aspect = window.innerWidth / window.innerHeight;
+                camera.updateProjectionMatrix();
+                renderer.setSize(window.innerWidth, window.innerHeight);
+            });
+        }
+        // 页面加载时检查自动登录
+        checkAutoLogin();
+        initThree();
+    </script>
+</body>
+</html>
