@@ -377,6 +377,83 @@
             pointer-events: none;
             text-align: right;
         }
+
+        /* 手机端响应式 */
+        @media (max-width: 600px) {
+            .chat-area {
+                width: 92% !important;
+                max-height: 180px !important;
+                bottom: 100px !important;
+            }
+
+            .input-area {
+                width: 92% !important;
+                bottom: 15px !important;
+            }
+
+            .input-area input {
+                padding: 12px 18px !important;
+                font-size: 14px !important;
+            }
+
+            .send-btn {
+                padding: 12px 20px !important;
+                font-size: 14px !important;
+            }
+
+            .message {
+                padding: 10px 14px !important;
+                gap: 8px !important;
+                margin-bottom: 10px !important;
+            }
+
+            .message-avatar {
+                font-size: 22px !important;
+            }
+
+            .message-name {
+                font-size: 12px !important;
+            }
+
+            .message-text {
+                font-size: 13px !important;
+            }
+
+            .floating-menu-btn {
+                bottom: 90px !important;
+                right: 12px !important;
+                width: 48px !important;
+                height: 48px !important;
+                font-size: 20px !important;
+            }
+
+            .expanded-panel {
+                bottom: 150px !important;
+                right: 12px !important;
+                width: 85% !important;
+                max-width: 280px !important;
+                max-height: 55vh !important;
+            }
+
+            .room-title h1 {
+                font-size: 18px !important;
+            }
+
+            .room-title p {
+                font-size: 11px !important;
+            }
+
+            .back-btn {
+                padding: 8px 16px !important;
+                font-size: 13px !important;
+            }
+
+            .online-count {
+                font-size: 12px !important;
+                top: 75px !important;
+                right: 12px !important;
+            }
+        }
     </style>
 </head>
 <body>
@@ -863,7 +940,7 @@
 
         // 鼠标/触摸事件处理
         function onMouseDown(e) {
-            if (e.target.closest('.chat-panel') || e.target.closest('.input-area') ||
+            if (e.target.closest('.chat-area') || e.target.closest('.input-area') ||
                 e.target.closest('.top-nav') || e.target.closest('.expanded-panel') ||
                 e.target.closest('.floating-menu-btn')) {
                 return;
@@ -875,7 +952,7 @@
 
         function onMouseMove(e) {
             if (!isDragging || isPinching) return;
-            if (e.target.closest('.chat-panel') || e.target.closest('.input-area') ||
+            if (e.target.closest('.chat-area') || e.target.closest('.input-area') ||
                 e.target.closest('.top-nav') || e.target.closest('.expanded-panel') ||
                 e.target.closest('.floating-menu-btn')) {
                 return;
