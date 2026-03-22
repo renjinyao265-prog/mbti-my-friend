@@ -998,16 +998,6 @@
             updateCamera();
         }
 
-        // 深度调节
-        let isAdjustingDepth = false;
-        document.addEventListener('wheel', (e) => {
-            if (e.target.closest('.expanded-panel')) {
-                depth = Math.max(10, Math.min(100, depth + e.deltaY * 0.05));
-                document.getElementById('depthFill').style.height = depth + '%';
-                document.getElementById('depthText').textContent = Math.round(depth) + '米';
-            }
-        }, { passive: true });
-
         // UI 功能
         function goBack() {
             window.location.href = 'home.html';
@@ -1198,6 +1188,15 @@
         document.getElementById('depthText').textContent = Math.round(depth) + '米';
         document.getElementById('cameraZoom').value = cameraZoom;
         document.getElementById('cameraZoomValue').textContent = Math.round(cameraZoom * 100) + '%';
+
+        // 深度调节
+        document.addEventListener('wheel', (e) => {
+            if (e.target.closest('.expanded-panel')) {
+                depth = Math.max(10, Math.min(100, depth + e.deltaY * 0.05));
+                document.getElementById('depthFill').style.height = depth + '%';
+                document.getElementById('depthText').textContent = Math.round(depth) + '米';
+            }
+        }, { passive: true });
     </script>
 </body>
 </html>
