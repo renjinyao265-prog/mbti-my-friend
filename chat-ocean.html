@@ -549,17 +549,6 @@
         let lastMouseX = 0, lastMouseY = 0;
         let initialPinchDistance = 0, initialCameraZoom = 1;
         let depth = 60;
-        let currentRoomMbti = 'INFP';
-        let currentUser = null;
-        let messages = [];
-        const formIcons = {
-            'whale': '🐳',
-            'dolphin': '🐬',
-            'octopus': '🐙',
-            'fish': '🐠',
-            'crab': '🦀',
-            'jellyfish': '🪼'
-        };
 
         function initThree() {
             const container = document.getElementById('canvas-container');
@@ -1008,87 +997,22 @@
             window.location.href = `chat-flower.html?mbti=${mbti}`;
         }
 
-        // 加载当前用户
-        function loadCurrentUser() {
-            try {
-                const saved = localStorage.getItem('mbtiUser');
-                if (saved) {
-                    currentUser = JSON.parse(saved);
-                }
-            } catch (e) {
-                currentUser = null;
-            }
-        }
-
         // 统计消息数
         function incrementChatCount() {
-            if (currentUser && currentUser.account) {
-                try {
-                    const allStats = JSON.parse(localStorage.getItem('mbtiUserStats') || '{}');
-                    if (!allStats[currentUser.account]) {
-                        allStats[currentUser.account] = { friendCount: 0, chatCount: 0, onlineDays: 1 };
+            try {
+                const savedUser = localStorage.getItem('mbtiUser');
+                if (savedUser) {
+                    const user = JSON.parse(savedUser);
+                    if (user && user.account) {
+                        const allStats = JSON.parse(localStorage.getItem('mbtiUserStats') || '{}');
+                        if (!allStats[user.account]) {
+                            allStats[user.account] = { friendCount: 0, chatCount: 0, onlineDays: 1 };
+                        }
+                        allStats[user.account].chatCount++;
+                        localStorage.setItem('mbtiUserStats', JSON.stringify(allStats));
                     }
-                    allStats[currentUser.account].chatCount++;
-                    localStorage.setItem('mbtiUserStats', JSON.stringify(allStats));
-                } catch (e) {}
-            }
-        }
-
-        // 获取聊天室消息存储key
-        function getRoomMessagesKey() {
-            return `mbtiChatMessages_ocean_${currentRoomMbti}`;
-        }
-
-        // 保存消息到 localStorage
-        function saveMessageToStorage(msg) {
-            try {
-                const key = getRoomMessagesKey();
-                const allMessages = JSON.parse(localStorage.getItem(key) || '[]');
-                msg.timestamp = Date.now();
-                allMessages.push(msg);
-                if (allMessages.length > 300) {
-                    allMessages.shift();
                 }
-                localStorage.setItem(key, JSON.stringify(allMessages));
             } catch (e) {}
-        }
-
-        // 从 localStorage 加载历史消息
-        function loadMessagesFromStorage() {
-            try {
-                const key = getRoomMessagesKey();
-                const allMessages = JSON.parse(localStorage.getItem(key) || '[]');
-                allMessages.forEach(msg => {
-                    renderMessage(msg, false);
-                });
-                const chatArea = document.getElementById('chatArea');
-                chatArea.scrollTop = chatArea.scrollHeight;
-            } catch (e) {}
-        }
-
-        // 渲染消息到界面
-        function renderMessage(msg, saveToStorage = true) {
-            const chatArea = document.getElementById('chatArea');
-            const isSelf = msg.userId === (currentUser && currentUser.id);
-            const div = document.createElement('div');
-            div.className = 'bubble-message' + (isSelf ? ' self' : '');
-            div.innerHTML = `
-                <span class="bubble-avatar">${formIcons[msg.form] || '🐳'}</span>
-                <div class="bubble" style="animation-delay: ${Math.random() * 0.5}s;">
-                    <div class="bubble-name">${msg.nickname}</div>
-                    <div class="bubble-text">${msg.text}</div>
-                </div>
-            `;
-            chatArea.appendChild(div);
-            chatArea.scrollTop = chatArea.scrollHeight;
-            messages.push(msg);
-
-            if (isSelf) {
-                incrementChatCount();
-                if (saveToStorage) {
-                    saveMessageToStorage(msg);
-                }
-            }
         }
 
         function sendMessage() {
@@ -1096,15 +1020,23 @@
             const text = input.value.trim();
             if (!text) return;
 
-            const msg = {
-                userId: currentUser && currentUser.id,
-                nickname: currentUser && currentUser.nickname || '我',
-                form: 'whale',
-                text: text
-            };
+            const chatArea = document.getElementById('chatArea');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = 'bubble-message self';
+            messageDiv.innerHTML = `
+                <span class="bubble-avatar">🐳</span>
+                <div class="bubble" style="animation-delay: ${Math.random() * 0.5}s;">
+                    <div class="bubble-name">我</div>
+                    <div class="bubble-text">${text}</div>
+                </div>
+            `;
+            chatArea.appendChild(messageDiv);
+            chatArea.scrollTop = chatArea.scrollHeight;
 
-            renderMessage(msg, true);
             input.value = '';
+
+            // 增加消息统计
+            incrementChatCount();
 
             // 同时在3D场景中添加一个大泡泡
             addUserBubble();
@@ -1152,7 +1084,6 @@
 
         function initRoom() {
             const mbti = getUrlParams();
-            currentRoomMbti = mbti;
             const mbtiData = {
                 INTJ: { name: '战略家', desc: '高冷智慧的战略家们在海底相聚' },
                 INTP: { name: '逻辑家', desc: '脑洞大开的思考者们在海底相聚' },
@@ -1175,9 +1106,6 @@
             const data = mbtiData[mbti] || mbtiData.INFP;
             document.getElementById('roomTitle').textContent = `🌊 ${mbti} 海水聊天室`;
             document.getElementById('roomSubtitle').textContent = data.desc;
-
-            loadCurrentUser();
-            loadMessagesFromStorage();
         }
 
         initThree();
