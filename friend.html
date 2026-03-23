@@ -2,79 +2,189 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>MBTI 交友云</title>
     <style>
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            -webkit-tap-highlight-color: transparent;
         }
 
         html, body {
             width: 100%;
-            overflow-x: hidden;
+            height: 100%;
+            font-family: 'Microsoft YaHei', 'PingFang SC', sans-serif;
         }
 
         body {
-            min-height: 100vh;
-            font-family: 'Microsoft YaHei', 'PingFang SC', sans-serif;
-            background: linear-gradient(135deg, #87CEEB 0%, #b0d0ff 30%, #d0c0ff 60%, #e0c0ff 100%);
+            background: linear-gradient(180deg, #a0c0ff 0%, #c0d0ff 50%, #e0e0ff 100%);
+            overflow-y: auto;
+            padding-bottom: 80px;
         }
 
-        /* 顶部导航 */
-        .top-nav {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            padding: 15px 20px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            z-index: 100;
-            background: linear-gradient(to bottom, rgba(100,150,255,0.4), transparent);
+        /* 页面内容 */
+        .page-content {
+            padding-top: 20px;
+            padding-bottom: 20px;
         }
 
-        .back-btn {
-            background: rgba(255,255,255,0.3);
-            backdrop-filter: blur(10px);
-            -webkit-backdrop-filter: blur(10px);
-            border: 1px solid rgba(255,255,255,0.4);
-            color: #3a5a8a;
-            padding: 10px 22px;
-            border-radius: 18px;
+        /* 顶部标题 */
+        .header {
+            text-align: center;
+            padding: 25px 20px 15px;
+        }
+
+        .header h1 {
+            color: #3a4a7a;
+            font-size: 1.8rem;
+            letter-spacing: 6px;
+            margin-bottom: 5px;
+        }
+
+        .header p {
+            color: #6a7aaa;
             font-size: 14px;
-            cursor: pointer;
+        }
+
+        /* 在线统计 */
+        .stats-bar {
+            background: rgba(255,255,255,0.7);
+            backdrop-filter: blur(15px);
+            margin: 0 20px 20px;
+            padding: 15px 20px;
+            border-radius: 20px;
+            border: 1px solid rgba(255,255,255,0.8);
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+        }
+
+        .stat-item {
+            text-align: center;
+        }
+
+        .stat-number {
+            font-size: 28px;
+            font-weight: 700;
+            color: #6080ff;
+        }
+
+        .stat-label {
+            font-size: 12px;
+            color: #7a8aaa;
+            margin-top: 2px;
+        }
+
+        /* 用户网格 */
+        .users-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            padding: 0 20px;
+        }
+
+        @media (min-width: 600px) {
+            .users-grid {
+                grid-template-columns: repeat(3, 1fr);
+            }
+        }
+
+        @media (min-width: 900px) {
+            .users-grid {
+                grid-template-columns: repeat(4, 1fr);
+            }
+        }
+
+        .user-card {
+            background: rgba(255,255,255,0.85);
+            backdrop-filter: blur(10px);
+            border-radius: 24px;
+            padding: 20px;
+            text-align: center;
+            border: 1px solid rgba(255,255,255,0.9);
+            box-shadow: 0 8px 25px rgba(100,120,200,0.15);
             transition: all 0.3s ease;
         }
 
-        .back-btn:hover {
-            background: rgba(255,255,255,0.5);
-            transform: scale(1.05);
+        .user-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 35px rgba(100,120,200,0.25);
         }
 
-        .back-btn:active {
-            transform: scale(0.95);
+        .user-avatar {
+            width: 70px;
+            height: 70px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #6080ff, #a0c0ff);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 32px;
+            margin: 0 auto 12px;
+            box-shadow: 0 5px 15px rgba(96,128,255,0.3);
         }
 
-        .logo {
-            color: white;
-            font-size: 18px;
-            font-weight: 700;
-            letter-spacing: 2px;
-            text-shadow: 0 2px 15px rgba(0,80,150,0.3);
+        .user-name {
+            font-size: 16px;
+            font-weight: 600;
+            color: #3a4a7a;
+            margin-bottom: 4px;
         }
 
-        /* 主内容 */
-        .main-content {
-            padding-top: 80px;
-            padding-bottom: 100px;
-            padding-left: 15px;
-            padding-right: 15px;
-            max-width: 500px;
-            margin: 0 auto;
+        .user-mbti {
+            display: inline-block;
+            background: linear-gradient(135deg, rgba(96,128,255,0.15), rgba(160,192,255,0.15));
+            color: #6080ff;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .user-status {
+            font-size: 12px;
+            color: #40c080;
+        }
+
+        .user-status::before {
+            content: '';
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            background: #40c080;
+            border-radius: 50%;
+            margin-right: 5px;
+            animation: pulse-status 2s infinite;
+        }
+
+        @keyframes pulse-status {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .user-bio {
+            font-size: 12px;
+            color: #8a9aba;
+            margin-top: 8px;
+            line-height: 1.4;
+        }
+
+        /* 空状态 */
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #7a8aaa;
+        }
+
+        .empty-state-icon {
+            font-size: 60px;
+            margin-bottom: 15px;
+        }
+
+        .empty-state p {
+            font-size: 14px;
         }
 
         /* 底部导航栏 */
@@ -83,15 +193,16 @@
             bottom: 0;
             left: 0;
             right: 0;
-            height: 70px;
+            height: 60px;
             background: rgba(255,255,255,0.95);
             backdrop-filter: blur(20px);
             -webkit-backdrop-filter: blur(20px);
-            border-top: 1px solid rgba(0,0,0,0.1);
+            border-top: 1px solid rgba(100,120,200,0.2);
             display: flex;
             justify-content: space-around;
             align-items: center;
             z-index: 200;
+            padding-bottom: env(safe-area-inset-bottom);
         }
 
         .nav-item {
@@ -104,498 +215,65 @@
             cursor: pointer;
             transition: all 0.3s ease;
             text-decoration: none;
-            color: #8a8a9a;
+            color: #8a9aba;
+            position: relative;
         }
 
         .nav-item:hover {
-            background: rgba(96, 160, 255, 0.1);
+            background: rgba(96,128,255,0.08);
         }
 
         .nav-item.active {
             color: #6080ff;
         }
 
+        .nav-item.active::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 40px;
+            height: 3px;
+            background: linear-gradient(90deg, transparent, #6080ff, transparent);
+            border-radius: 0 0 3px 3px;
+        }
+
         .nav-item-icon {
-            font-size: 24px;
-            margin-bottom: 4px;
+            font-size: 22px;
+            margin-bottom: 3px;
         }
 
         .nav-item-text {
-            font-size: 12px;
-            font-weight: 600;
-        }
-
-        /* 页面标题 */
-        .page-title {
-            text-align: center;
-            margin-bottom: 25px;
-        }
-
-        .page-title h1 {
-            color: #2a4a7a;
-            font-size: 22px;
-            letter-spacing: 3px;
-            margin-bottom: 8px;
-        }
-
-        .page-title p {
-            color: #5a7aaa;
-            font-size: 13px;
-        }
-
-        /* 模式选择卡片 */
-        .mode-card {
-            background: rgba(255,255,255,0.9);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            border-radius: 24px;
-            padding: 20px;
-            box-shadow: 0 20px 60px rgba(0,80,150,0.15);
-            margin-bottom: 20px;
-        }
-
-        .mode-title {
-            color: #2a5a8a;
-            font-size: 16px;
-            font-weight: 700;
-            margin-bottom: 15px;
-            text-align: center;
-        }
-
-        .mode-buttons {
-            display: flex;
-            gap: 12px;
-        }
-
-        .mode-btn {
-            flex: 1;
-            padding: 16px 12px;
-            border: 2px solid rgba(100,150,255,0.3);
-            border-radius: 16px;
-            background: rgba(100,150,255,0.08);
-            color: #3a5a8a;
-            font-size: 14px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 6px;
-        }
-
-        .mode-btn:hover {
-            background: rgba(100,150,255,0.15);
-            transform: translateY(-2px);
-        }
-
-        .mode-btn.active {
-            border-color: #60a0ff;
-            background: linear-gradient(135deg, rgba(96,160,255,0.2) 0%, rgba(64,128,224,0.2) 100%);
-        }
-
-        .mode-btn .mode-icon {
-            font-size: 24px;
-        }
-
-        /* 在线玩家卡片 */
-        .online-card {
-            background: rgba(255,255,255,0.9);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            border-radius: 24px;
-            padding: 25px 20px;
-            box-shadow: 0 20px 60px rgba(0,80,150,0.15);
-            margin-bottom: 20px;
-        }
-
-        .online-card h2 {
-            color: #2a5a8a;
-            font-size: 16px;
-            margin-bottom: 15px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .online-count {
-            color: #4a7aaa;
-            font-size: 14px;
-            margin-bottom: 15px;
-        }
-
-        .player-list {
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-            max-height: 400px;
-            overflow-y: auto;
-        }
-
-        .player-item {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-            padding: 15px;
-            background: rgba(100,150,255,0.08);
-            border-radius: 16px;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            border: 2px solid transparent;
-        }
-
-        .player-item:hover {
-            background: rgba(100,150,255,0.15);
-            transform: translateX(3px);
-        }
-
-        .player-item:active {
-            transform: scale(0.98);
-        }
-
-        .player-item.match-high {
-            border-color: #60c060;
-            background: rgba(100,200,100,0.1);
-        }
-
-        .player-item.match-good {
-            border-color: #60a0ff;
-            background: rgba(100,160,255,0.1);
-        }
-
-        .player-avatar {
-            width: 50px;
-            height: 50px;
-            border-radius: 50%;
-            background: linear-gradient(135deg, #60a0ff 0%, #8080ff 100%);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-size: 22px;
-            font-weight: 700;
-            flex-shrink: 0;
-        }
-
-        .player-info {
-            flex: 1;
-            min-width: 0;
-        }
-
-        .player-name {
-            color: #2a5a8a;
-            font-size: 16px;
-            font-weight: 700;
-            margin-bottom: 4px;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap;
-        }
-
-        .player-mbti {
-            display: inline-block;
-            padding: 3px 10px;
-            background: linear-gradient(135deg, #a0b0ff 0%, #8090ff 100%);
-            color: white;
-            border-radius: 10px;
-            font-size: 12px;
-            font-weight: 700;
-            letter-spacing: 1px;
-        }
-
-        .player-bio {
-            color: #6a8aaa;
-            font-size: 13px;
-            margin-top: 6px;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap;
-        }
-
-        .player-score {
-            padding: 6px 12px;
-            border-radius: 12px;
-            font-size: 13px;
-            font-weight: 700;
-            flex-shrink: 0;
-        }
-
-        .player-score.score-high {
-            background: linear-gradient(135deg, #60c060 0%, #40a040 100%);
-            color: white;
-        }
-
-        .player-score.score-good {
-            background: linear-gradient(135deg, #60a0ff 0%, #4080e0 100%);
-            color: white;
-        }
-
-        .player-score.score-ok {
-            background: rgba(100,150,255,0.15);
-            color: #4a7aaa;
-        }
-
-        /* 空状态 */
-        .empty-state {
-            text-align: center;
-            padding: 40px 20px;
-            color: #6a8aaa;
-            font-size: 14px;
-        }
-
-        .empty-state span {
-            font-size: 50px;
-            display: block;
-            margin-bottom: 15px;
-        }
-
-        /* 刷新按钮 */
-        .refresh-btn {
-            width: 100%;
-            padding: 14px;
-            border: none;
-            border-radius: 16px;
-            background: linear-gradient(135deg, #60a0ff 0%, #4080e0 100%);
-            color: white;
-            font-size: 15px;
-            font-weight: 700;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            box-shadow: 0 8px 25px rgba(80,130,220,0.4);
-        }
-
-        .refresh-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 12px 35px rgba(80,130,220,0.5);
-        }
-
-        .refresh-btn:active {
-            transform: scale(0.98);
-        }
-
-        /* 手机端适配 */
-        @media (max-width: 600px) {
-            .main-content {
-                padding-left: 12px;
-                padding-right: 12px;
-            }
-
-            .online-card {
-                padding: 20px 16px;
-                border-radius: 20px;
-            }
-
-            .player-item {
-                padding: 12px;
-                gap: 12px;
-            }
-
-            .player-avatar {
-                width: 45px;
-                height: 45px;
-                font-size: 20px;
-            }
-
-            .player-name {
-                font-size: 15px;
-            }
-
-            .player-score {
-                padding: 5px 10px;
-                font-size: 12px;
-            }
+            font-size: 11px;
+            font-weight: 500;
         }
     </style>
 </head>
 <body>
-    <nav class="top-nav">
-        <button class="back-btn" onclick="goBack()">← 返回</button>
-        <div class="logo">☁️ 交友云</div>
-        <div style="width:70px;"></div>
-    </nav>
-
-    <div class="main-content">
-        <div class="page-title">
-            <h1>找到同频的朋友</h1>
-            <p>看看有哪些星球居民在线~</p>
+    <div class="page-content">
+        <div class="header">
+            <h1>👥 交友云</h1>
+            <p>发现同频的星球伙伴</p>
         </div>
 
-        <div class="mode-card">
-            <div class="mode-title">选择你想找的</div>
-            <div class="mode-buttons">
-                <button class="mode-btn active" id="friendMode" onclick="switchMode('friend')">
-                    <span class="mode-icon">👫</span>
-                    <span>找朋友</span>
-                </button>
-                <button class="mode-btn" id="loveMode" onclick="switchMode('love')">
-                    <span class="mode-icon">💕</span>
-                    <span>找对象</span>
-                </button>
+        <div class="stats-bar">
+            <div class="stat-item">
+                <div class="stat-number" id="onlineCount">0</div>
+                <div class="stat-label">在线用户</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-number" id="totalCount">0</div>
+                <div class="stat-label">注册用户</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-number">16</div>
+                <div class="stat-label">MBTI类型</div>
             </div>
         </div>
 
-        <div class="online-card">
-            <h2>👥 在线玩家</h2>
-            <div class="online-count" id="onlineCount">当前共有 0 位玩家</div>
-            <div class="player-list" id="playerList">
-                <div class="empty-state">
-                    <span>🌟</span>
-                    暂无其他玩家在线<br>去聊天室认识新朋友吧！
-                </div>
-            </div>
-        </div>
-
-        <button class="refresh-btn" onclick="refreshPlayers()">🔄 刷新列表</button>
+        <div class="users-grid" id="usersGrid"></div>
     </div>
-
-    <script>
-        // MBTI 匹配度数据
-        const matchScores = {
-            INTJ: { INTP: 98, ENTJ: 90, ENTP: 85, INFJ: 80, INTJ: 75 },
-            INTP: { INTJ: 98, ENTP: 90, INTP: 85, ENTJ: 80, INFP: 75 },
-            ENTJ: { INTJ: 90, ENTJ: 85, ENTP: 80, ESTJ: 75, ENFJ: 70 },
-            ENTP: { ENTP: 90, INTP: 85, ENTJ: 80, ENFP: 75, INTJ: 70 },
-            INFJ: { INFP: 98, ENFJ: 90, INTJ: 80, INFJ: 75, ISFJ: 70 },
-            INFP: { INFJ: 98, ENFP: 90, INFP: 85, ISFP: 80, INTP: 75 },
-            ENFJ: { ENFJ: 90, INFJ: 85, ESFJ: 80, ENFP: 75, ENTJ: 70 },
-            ENFP: { ENFP: 90, INFP: 85, ENFJ: 80, ENTP: 75, ESFP: 70 },
-            ISTJ: { ISTJ: 90, ISFJ: 85, ESTJ: 80, INTJ: 75, ISTP: 70 },
-            ISFJ: { ISFJ: 90, ISTJ: 85, ESFJ: 80, INFJ: 75, ISFP: 70 },
-            ESTJ: { ESTJ: 90, ISTJ: 85, ESFJ: 80, ENTJ: 75, ESTP: 70 },
-            ESFJ: { ESFJ: 90, ISFJ: 85, ESTJ: 80, ENFJ: 75, ESFP: 70 },
-            ISTP: { ISTP: 90, ESTP: 85, ISFP: 80, INTP: 75, ISTJ: 70 },
-            ISFP: { ISFP: 90, ISTP: 85, INFP: 80, ESFP: 75, ISFJ: 70 },
-            ESTP: { ESTP: 90, ISTP: 85, ESFP: 80, ESTJ: 75, ENTP: 70 },
-            ESFP: { ESFP: 90, ESTP: 85, ISFP: 80, ENFP: 75, ESFJ: 70 }
-        };
-
-        let currentUser = null;
-        let allPlayers = [];
-        let currentMode = 'friend';
-
-        // 获取所有注册账号
-        function getAllAccounts() {
-            try {
-                const accounts = JSON.parse(localStorage.getItem('mbtiAccounts') || '{}');
-                return Object.values(accounts);
-            } catch (e) {
-                return [];
-            }
-        }
-
-        // 计算匹配分数
-        function getMatchScore(userMbti, otherMbti) {
-            if (userMbti === otherMbti) return 70;
-            const scores = matchScores[userMbti] || {};
-            return scores[otherMbti] || 60;
-        }
-
-        // 获取分数等级
-        function getScoreClass(score) {
-            if (score >= 85) return 'score-high';
-            if (score >= 70) return 'score-good';
-            return 'score-ok';
-        }
-
-        function getMatchBorderClass(score) {
-            if (score >= 85) return 'match-high';
-            if (score >= 70) return 'match-good';
-            return '';
-        }
-
-        // 加载当前用户
-        function loadCurrentUser() {
-            const saved = localStorage.getItem('mbtiUser');
-            if (saved) {
-                try {
-                    currentUser = JSON.parse(saved);
-                } catch(e) {
-                    currentUser = null;
-                }
-            }
-        }
-
-        // 渲染玩家列表
-        function renderPlayerList() {
-            const container = document.getElementById('playerList');
-            const accounts = getAllAccounts();
-
-            // 过滤掉当前用户自己
-            if (currentUser && currentUser.account) {
-                allPlayers = accounts.filter(account =>
-                    account.account !== currentUser.account
-                );
-            } else {
-                allPlayers = accounts;
-            }
-
-            document.getElementById('onlineCount').textContent =
-                `当前共有 ${allPlayers.length} 位玩家`;
-
-            if (allPlayers.length === 0) {
-                container.innerHTML = `
-                    <div class="empty-state">
-                        <span>🌟</span>
-                        暂无其他玩家在线<br>去聊天室认识新朋友吧！
-                    </div>
-                `;
-                return;
-            }
-
-            // 按匹配度排序
-            const userMbti = currentUser ? currentUser.mbti : 'INFP';
-            allPlayers.sort((a, b) => {
-                const scoreA = getMatchScore(userMbti, a.mbti || 'INFP');
-                const scoreB = getMatchScore(userMbti, b.mbti || 'INFP');
-                return scoreB - scoreA;
-            });
-
-            container.innerHTML = allPlayers.map(player => {
-                const playerMbti = player.mbti || 'INFP';
-                const score = getMatchScore(userMbti, playerMbti);
-                const scoreClass = getScoreClass(score);
-                const borderClass = getMatchBorderClass(score);
-
-                return `
-                    <div class="player-item ${borderClass}" onclick="visitPlayer('${player.account}')">
-                        <div class="player-avatar">${(player.nickname || '星').charAt(0)}</div>
-                        <div class="player-info">
-                            <div class="player-name">${player.nickname || '小星人'}</div>
-                            <div class="player-mbti">${playerMbti}</div>
-                            <div class="player-bio">${player.bio || '这个人很懒，什么都没写~'}</div>
-                        </div>
-                        <div class="player-score ${scoreClass}">${score}%</div>
-                    </div>
-                `;
-            }).join('');
-        }
-
-        function visitPlayer(account) {
-            alert('去和 TA 打个招呼吧！\n\n（可以去聊天室找到 TA）');
-        }
-
-        function refreshPlayers() {
-            renderPlayerList();
-        }
-
-        function switchMode(mode) {
-            currentMode = mode;
-            document.getElementById('friendMode').classList.toggle('active', mode === 'friend');
-            document.getElementById('loveMode').classList.toggle('active', mode === 'love');
-            renderPlayerList();
-        }
-
-        function goBack() {
-            window.location.href = 'home.html';
-        }
-
-        function init() {
-            loadCurrentUser();
-            renderPlayerList();
-        }
-
-        init();
-    </script>
 
     <!-- 底部导航栏 -->
     <nav class="bottom-nav">
@@ -612,5 +290,67 @@
             <span class="nav-item-text">个人中心</span>
         </a>
     </nav>
+
+    <script>
+        const sampleUsers = [
+            { id: '1', nickname: '星尘旅者', mbti: 'INFP', avatar: '🦋', bio: '喜欢在星空下做梦的理想主义者' },
+            { id: '2', nickname: '智慧观察者', mbti: 'INTJ', avatar: '🦉', bio: '高冷但内心温暖的战略家' },
+            { id: '3', nickname: '逻辑玩家', mbti: 'INTP', avatar: '🧩', bio: '永远在思考为什么的逻辑家' },
+            { id: '4', nickname: '阳光领袖', mbti: 'ENTJ', avatar: '🦁', bio: '气场全开，天生的领导者' },
+            { id: '5', nickname: '创意无限', mbti: 'ENTP', avatar: '🎪', bio: '脑洞比宇宙还大的辩论家' },
+            { id: '6', nickname: '温柔治愈', mbti: 'INFJ', avatar: '🌸', bio: '能读懂你内心的洞察者' },
+            { id: '7', nickname: '热情小太阳', mbti: 'ENFP', avatar: '🌻', bio: '永远充满活力的逐梦者' },
+            { id: '8', nickname: '温暖引导', mbti: 'ENFJ', avatar: '🌟', bio: '像阳光一样温暖的引导者' },
+            { id: '9', nickname: '严谨守护者', mbti: 'ISTJ', avatar: '📚', bio: '可靠又安心的检查者' },
+            { id: '10', nickname: '贴心守护', mbti: 'ISFJ', avatar: '☕', bio: '默默守护你的守卫者' },
+            { id: '11', nickname: '规则至上', mbti: 'ESTJ', avatar: '📋', bio: '井井有条的管理者' },
+            { id: '12', nickname: '社交达人', mbti: 'ESFJ', avatar: '🎀', bio: '暖心又社交的执政官' },
+            { id: '13', nickname: '酷感工匠', mbti: 'ISTP', avatar: '🔧', bio: '动手能力超强的鉴赏家' },
+            { id: '14', nickname: '艺术美学', mbti: 'ISFP', avatar: '🎨', bio: '温柔又审美的探险家' },
+            { id: '15', nickname: '热血冒险家', mbti: 'ESTP', avatar: '🏃', bio: '永远在行动的企业家' },
+            { id: '16', nickname: '派对中心', mbti: 'ESFP', avatar: '🎉', bio: '哪里有我哪里就有派对的表演者' }
+        ];
+
+        function getAccounts() {
+            try {
+                const accounts = JSON.parse(localStorage.getItem('mbtiAccounts') || '[]');
+                return accounts.length > 0 ? accounts : sampleUsers;
+            } catch (e) {
+                return sampleUsers;
+            }
+        }
+
+        function renderUsers() {
+            const grid = document.getElementById('usersGrid');
+            const accounts = getAccounts();
+
+            document.getElementById('onlineCount').textContent = Math.max(1, Math.min(accounts.length, 8));
+            document.getElementById('totalCount').textContent = accounts.length;
+
+            if (accounts.length === 0) {
+                grid.innerHTML = `
+                    <div class="empty-state" style="grid-column: 1 / -1;">
+                        <div class="empty-state-icon">☁️</div>
+                        <p>暂时还没有用户，快来第一个加入吧！</p>
+                    </div>
+                `;
+                return;
+            }
+
+            grid.innerHTML = accounts.map(user => `
+                <div class="user-card">
+                    <div class="user-avatar">${user.avatar || '🌟'}</div>
+                    <div class="user-name">${user.nickname || '神秘用户'}</div>
+                    <div class="user-mbti">${user.mbti || 'MBTI'}</div>
+                    <div class="user-status">在线</div>
+                    ${user.bio ? `<div class="user-bio">${user.bio}</div>` : ''}
+                </div>
+            `).join('');
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            renderUsers();
+        });
+    </script>
 </body>
 </html>

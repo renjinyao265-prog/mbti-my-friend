@@ -15,45 +15,28 @@
             width: 100%;
             height: 100%;
             overflow: hidden;
+            font-family: 'Microsoft YaHei', 'PingFang SC', sans-serif;
         }
 
         body {
-            overflow: hidden;
-            font-family: 'Microsoft YaHei', sans-serif;
-            touch-action: none;
+            background: radial-gradient(ellipse at center, #2a1a4a 0%, #1a0a2a 50%, #0a0515 100%);
         }
 
-        /* 背景层 */
-        .space-bg {
+        #canvas-container {
             position: fixed;
             top: 0;
             left: 0;
-            width: 100vw;
-            height: 100vh;
-            background: radial-gradient(ellipse at center, #3d2066 0%, #2a1547 30%, #1a0a2e 70%, #0d051a 100%);
-            z-index: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
         }
 
-        /* 星光粒子 */
-        .star {
-            position: absolute;
-            background: white;
-            border-radius: 50%;
-            animation: twinkle 3s infinite ease-in-out;
-        }
-
-        @keyframes twinkle {
-            0%, 100% { opacity: 0.3; transform: scale(1); }
-            50% { opacity: 1; transform: scale(1.2); }
-        }
-
-        /* 顶部标题 */
         .header {
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
-            padding: 20px;
+            padding: 25px;
             text-align: center;
             z-index: 100;
             pointer-events: none;
@@ -62,441 +45,27 @@
         .header h1 {
             color: #fff;
             font-size: 2rem;
-            text-shadow: 0 0 20px rgba(255,255,255,0.5);
-            letter-spacing: 8px;
+            text-shadow: 0 0 30px rgba(180, 150, 255, 0.8);
+            letter-spacing: 10px;
+            font-weight: 300;
         }
 
-        /* 缩放控制 */
-        .zoom-controls {
-            position: fixed;
-            left: 20px;
-            top: 50%;
-            transform: translateY(-50%);
-            z-index: 100;
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-        }
-
-        .zoom-btn {
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            background: rgba(255,255,255,0.25);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255,255,255,0.3);
-            color: white;
-            font-size: 20px;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: all 0.3s ease;
-        }
-
-        .zoom-btn:hover {
-            background: rgba(255,255,255,0.4);
-            transform: scale(1.1);
-        }
-
-        /* 星球容器 - 可缩放平移 */
-        .planets-wrapper {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100vw;
-            height: 100vh;
-            z-index: 10;
-            overflow: hidden;
-        }
-
-        .planets-container {
-            position: absolute;
-            width: 100vw;
-            height: 100vh;
-            top: 0;
-            left: 0;
-            transform-origin: center center;
-            transition: transform 0.1s ease-out;
-        }
-
-        /* 轨道 */
-        .orbit {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            border-radius: 50%;
-            border: 1px dashed rgba(255,255,255,0.1);
-            pointer-events: none;
-            transform: translate(-50%, -50%);
-        }
-
-        /* 星球基础样式 */
-        .planet-wrapper {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform-origin: center center;
-        }
-
-        .planet {
-            position: absolute;
-            cursor: pointer;
-            transition: box-shadow 0.3s ease;
-            transform-style: preserve-3d;
-        }
-
-        .planet:hover {
-            z-index: 50;
-        }
-
-        .planet-label {
-            position: absolute;
-            bottom: -45px;
-            left: 50%;
-            transform: translateX(-50%);
-            white-space: nowrap;
-            color: #fff;
-            font-size: 12px;
-            text-shadow: 0 0 10px rgba(0,0,0,0.8);
-            opacity: 0;
-            transition: opacity 0.3s ease;
-            pointer-events: none;
-            background: rgba(0,0,0,0.4);
-            padding: 5px 12px;
-            border-radius: 12px;
-            backdrop-filter: blur(5px);
-        }
-
-        .planet:hover .planet-label {
-            opacity: 1;
-        }
-
-        /* ============ 3D 星球样式 ============ */
-
-        /* 通用 3D 效果 */
-        .planet-3d {
-            position: relative;
-            border-radius: 50%;
-            transform-style: preserve-3d;
-        }
-
-        .planet-3d::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            border-radius: 50%;
-            background: linear-gradient(135deg, rgba(255,255,255,0.4) 0%, rgba(255,255,255,0.1) 20%, transparent 50%, rgba(0,0,0,0.3) 80%, rgba(0,0,0,0.5) 100%);
-            z-index: 2;
-            pointer-events: none;
-        }
-
-        .planet-3d::after {
-            content: '';
-            position: absolute;
-            top: 10%;
-            left: 15%;
-            width: 25%;
-            height: 20%;
-            background: radial-gradient(ellipse at center, rgba(255,255,255,0.8) 0%, rgba(255,255,255,0.3) 50%, transparent 100%);
-            border-radius: 50%;
-            z-index: 3;
-            pointer-events: none;
-        }
-
-        /* NT 分析家组 - 紫/蓝调 */
-
-        .planet.intj .planet-3d {
-            width: 80px;
-            height: 80px;
-            background: radial-gradient(circle at 30% 30%, #b070ff 0%, #8040d0 30%, #502090 60%, #301060 100%);
-            box-shadow:
-                0 0 30px rgba(128, 64, 208, 0.6),
-                inset -10px -10px 20px rgba(0,0,0,0.4),
-                inset 5px 5px 15px rgba(255,255,255,0.2);
-            animation: spin-slow 20s infinite linear;
-        }
-
-        .planet.intj:hover {
-            filter: drop-shadow(0 0 40px rgba(160, 96, 255, 0.9));
-        }
-
-        .planet.intp .planet-3d {
-            width: 75px;
-            height: 75px;
-            background: radial-gradient(circle at 35% 35%, #e0f0ff 0%, #a0d0ff 30%, #60a0d0 60%, #3070a0 100%);
-            box-shadow:
-                0 0 28px rgba(96, 160, 208, 0.6),
-                inset -8px -8px 18px rgba(0,0,0,0.35),
-                inset 5px 5px 12px rgba(255,255,255,0.25);
-            animation: spin-medium 15s infinite linear;
-        }
-
-        .planet.intp:hover {
-            filter: drop-shadow(0 0 35px rgba(128, 192, 255, 0.9));
-        }
-
-        .planet.entj .planet-3d {
-            width: 85px;
-            height: 85px;
-            background: radial-gradient(circle at 30% 30%, #fff0b0 0%, #ffc040 30%, #ff9020 60%, #d06000 100%);
-            box-shadow:
-                0 0 35px rgba(255, 144, 32, 0.7),
-                inset -12px -12px 25px rgba(0,0,0,0.4),
-                inset 6px 6px 18px rgba(255,255,255,0.25);
-            animation: spin-fast 12s infinite linear;
-        }
-
-        .planet.entj:hover {
-            filter: drop-shadow(0 0 50px rgba(255, 160, 40, 1));
-        }
-
-        .planet.entp .planet-3d {
-            width: 72px;
-            height: 72px;
-            background: radial-gradient(circle at 30% 30%, #ffffc0 0%, #d0ff80 30%, #80ffb0 60%, #40d080 100%);
-            box-shadow:
-                0 0 28px rgba(128, 255, 176, 0.6),
-                inset -8px -8px 18px rgba(0,0,0,0.3),
-                inset 5px 5px 12px rgba(255,255,255,0.3);
-            animation: spin-medium 14s infinite linear;
-        }
-
-        .planet.entp:hover {
-            filter: drop-shadow(0 0 40px rgba(160, 255, 180, 0.9));
-        }
-
-        /* NF 外交家组 - 粉/暖调 */
-
-        .planet.infj .planet-3d {
-            width: 78px;
-            height: 78px;
-            background: radial-gradient(circle at 30% 30%, #fff5fa 0%, #ffd0e5 30%, #e8a0c5 60%, #c070a0 100%);
-            box-shadow:
-                0 0 30px rgba(255, 160, 200, 0.6),
-                inset -9px -9px 20px rgba(0,0,0,0.3),
-                inset 5px 5px 14px rgba(255,255,255,0.25);
-            animation: spin-slow 22s infinite linear;
-        }
-
-        .planet.infj:hover {
-            filter: drop-shadow(0 0 40px rgba(255, 180, 210, 0.9));
-        }
-
-        .planet.infp .planet-3d {
-            width: 73px;
-            height: 73px;
-            background: radial-gradient(circle at 35% 35%, #fff0ff 0%, #e0b0ff 30%, #c090ff 60%, #a060d0 100%);
-            box-shadow:
-                0 0 28px rgba(208, 160, 255, 0.6),
-                inset -8px -8px 18px rgba(0,0,0,0.3),
-                inset 5px 5px 12px rgba(255,255,255,0.25);
-            animation: spin-slow 25s infinite linear;
-        }
-
-        .planet.infp:hover {
-            filter: drop-shadow(0 0 40px rgba(220, 180, 255, 0.9));
-        }
-
-        .planet.enfj .planet-3d {
-            width: 80px;
-            height: 80px;
-            background: radial-gradient(circle at 30% 30%, #f0ffff 0%, #b0e0ff 30%, #70b0e0 60%, #4080b0 100%);
-            box-shadow:
-                0 0 32px rgba(112, 176, 224, 0.6),
-                inset -10px -10px 22px rgba(0,0,0,0.35),
-                inset 6px 6px 15px rgba(255,255,255,0.25);
-            animation: spin-medium 18s infinite linear;
-        }
-
-        .planet.enfj:hover {
-            filter: drop-shadow(0 0 45px rgba(140, 200, 255, 0.9));
-        }
-
-        .planet.enfp .planet-3d {
-            width: 82px;
-            height: 82px;
-            background: radial-gradient(circle at 30% 30%, #fff0e0 0%, #ffc080 30%, #ff9050 60%, #e06030 100%);
-            box-shadow:
-                0 0 35px rgba(255, 144, 80, 0.7),
-                inset -10px -10px 22px rgba(0,0,0,0.35),
-                inset 6px 6px 15px rgba(255,255,255,0.25);
-            animation: spin-fast 11s infinite linear;
-        }
-
-        .planet.enfp:hover {
-            filter: drop-shadow(0 0 50px rgba(255, 160, 100, 1));
-        }
-
-        /* SJ 守护者组 - 绿/沉稳调 */
-
-        .planet.istj .planet-3d {
-            width: 76px;
-            height: 76px;
-            background: radial-gradient(circle at 30% 30%, #b0d0b0 0%, #70a070 30%, #508050 60%, #306030 100%);
-            box-shadow:
-                0 0 26px rgba(112, 160, 112, 0.6),
-                inset -8px -8px 18px rgba(0,0,0,0.35),
-                inset 5px 5px 12px rgba(255,255,255,0.15);
-            animation: spin-slow 28s infinite linear;
-        }
-
-        .planet.istj:hover {
-            filter: drop-shadow(0 0 38px rgba(140, 200, 140, 0.9));
-        }
-
-        .planet.estj .planet-3d {
-            width: 79px;
-            height: 79px;
-            background: radial-gradient(circle at 30% 30%, #e0d0ff 0%, #b080ff 30%, #8050d0 60%, #6030a0 100%);
-            box-shadow:
-                0 0 30px rgba(128, 80, 208, 0.6),
-                inset -9px -9px 20px rgba(0,0,0,0.35),
-                inset 5px 5px 14px rgba(255,255,255,0.2);
-            animation: spin-medium 17s infinite linear;
-        }
-
-        .planet.estj:hover {
-            filter: drop-shadow(0 0 42px rgba(160, 110, 255, 0.9));
-        }
-
-        .planet.isfj .planet-3d {
-            width: 75px;
-            height: 75px;
-            background: radial-gradient(circle at 30% 30%, #fffff0 0%, #f0e0c0 30%, #e0d0a0 60%, #c0b080 100%);
-            box-shadow:
-                0 0 28px rgba(224, 208, 160, 0.6),
-                inset -8px -8px 18px rgba(0,0,0,0.3),
-                inset 5px 5px 12px rgba(255,255,255,0.3);
-            animation: spin-slow 24s infinite linear;
-        }
-
-        .planet.isfj:hover {
-            filter: drop-shadow(0 0 40px rgba(240, 220, 180, 0.9));
-        }
-
-        .planet.esfj .planet-3d {
-            width: 80px;
-            height: 80px;
-            background: radial-gradient(circle at 30% 30%, #fff5ff 0%, #ffd0f0 30%, #ffb0e0 60%, #f090c0 100%);
-            box-shadow:
-                0 0 32px rgba(255, 176, 224, 0.65),
-                inset -10px -10px 22px rgba(0,0,0,0.3),
-                inset 6px 6px 15px rgba(255,255,255,0.25);
-            animation: spin-medium 16s infinite linear;
-        }
-
-        .planet.esfj:hover {
-            filter: drop-shadow(0 0 45px rgba(255, 180, 230, 0.95));
-        }
-
-        /* SP 探险家组 - 亮/艳调 */
-
-        .planet.istp .planet-3d {
-            width: 72px;
-            height: 72px;
-            background: radial-gradient(circle at 30% 30%, #e8e8e8 0%, #b0b0c0 30%, #808090 60%, #505060 100%);
-            box-shadow:
-                0 0 26px rgba(160, 160, 176, 0.6),
-                inset -8px -8px 18px rgba(0,0,0,0.35),
-                inset 5px 5px 12px rgba(255,255,255,0.2);
-            animation: spin-medium 15s infinite linear;
-        }
-
-        .planet.istp:hover {
-            filter: drop-shadow(0 0 38px rgba(180, 180, 200, 0.9));
-        }
-
-        .planet.isfp .planet-3d {
-            width: 70px;
-            height: 70px;
-            background: radial-gradient(circle at 30% 30%, #e0fff0 0%, #a0f0d0 30%, #70d0b0 60%, #40b090 100%);
-            box-shadow:
-                0 0 26px rgba(112, 208, 176, 0.6),
-                inset -7px -7px 16px rgba(0,0,0,0.3),
-                inset 5px 5px 10px rgba(255,255,255,0.25);
-            animation: spin-slow 26s infinite linear;
-        }
-
-        .planet.isfp:hover {
-            filter: drop-shadow(0 0 38px rgba(160, 240, 200, 0.9));
-        }
-
-        .planet.estp .planet-3d {
-            width: 78px;
-            height: 78px;
-            background: radial-gradient(circle at 30% 30%, #fff0a0 0%, #ff8040 30%, #ff5020 60%, #d03010 100%);
-            box-shadow:
-                0 0 32px rgba(255, 128, 64, 0.7),
-                inset -9px -9px 20px rgba(0,0,0,0.35),
-                inset 6px 6px 14px rgba(255,255,255,0.2);
-            animation: spin-fast 10s infinite linear;
-        }
-
-        .planet.estp:hover {
-            filter: drop-shadow(0 0 48px rgba(255, 140, 80, 1));
-        }
-
-        .planet.esfp .planet-3d {
-            width: 85px;
-            height: 85px;
-            background: radial-gradient(circle at 30% 30%, #fff0ff 0%, #ff80d0 30%, #e050a0 60%, #b03080 100%);
-            box-shadow:
-                0 0 38px rgba(255, 128, 208, 0.75),
-                inset -12px -12px 26px rgba(0,0,0,0.4),
-                inset 7px 7px 18px rgba(255,255,255,0.25);
-            animation: spin-fast 9s infinite linear;
-        }
-
-        .planet.esfp:hover {
-            filter: drop-shadow(0 0 55px rgba(255, 140, 220, 1));
-        }
-
-        /* 动画关键帧 */
-        @keyframes spin-slow {
-            from { transform: rotate(0deg); }
-            to { transform: rotate(360deg); }
-        }
-        @keyframes spin-medium {
-            from { transform: rotate(0deg); }
-            to { transform: rotate(360deg); }
-        }
-        @keyframes spin-fast {
-            from { transform: rotate(0deg); }
-            to { transform: rotate(360deg); }
-        }
-
-        @keyframes orbit-slow {
-            from { transform: translate(-50%, -50%) rotate(0deg); }
-            to { transform: translate(-50%, -50%) rotate(360deg); }
-        }
-        @keyframes orbit-medium {
-            from { transform: translate(-50%, -50%) rotate(0deg); }
-            to { transform: translate(-50%, -50%) rotate(360deg); }
-        }
-        @keyframes orbit-fast {
-            from { transform: translate(-50%, -50%) rotate(0deg); }
-            to { transform: translate(-50%, -50%) rotate(360deg); }
-        }
-
-        /* 底部导航栏 */
+        /* 底部导航栏 - QQ风格 */
         .bottom-nav {
             position: fixed;
             bottom: 0;
             left: 0;
             right: 0;
-            height: 70px;
-            background: rgba(255,255,255,0.95);
+            height: 60px;
+            background: rgba(20, 15, 35, 0.95);
             backdrop-filter: blur(20px);
             -webkit-backdrop-filter: blur(20px);
-            border-top: 1px solid rgba(0,0,0,0.1);
+            border-top: 1px solid rgba(100, 80, 150, 0.3);
             display: flex;
             justify-content: space-around;
             align-items: center;
             z-index: 200;
+            padding-bottom: env(safe-area-inset-bottom);
         }
 
         .nav-item {
@@ -509,172 +78,67 @@
             cursor: pointer;
             transition: all 0.3s ease;
             text-decoration: none;
-            color: #8a8a9a;
+            color: #8a8aa0;
+            position: relative;
         }
 
         .nav-item:hover {
-            background: rgba(96, 160, 255, 0.1);
+            background: rgba(120, 100, 180, 0.15);
         }
 
         .nav-item.active {
-            color: #6080ff;
+            color: #b090ff;
+        }
+
+        .nav-item.active::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 40px;
+            height: 3px;
+            background: linear-gradient(90deg, transparent, #b090ff, transparent);
+            border-radius: 0 0 3px 3px;
         }
 
         .nav-item-icon {
-            font-size: 24px;
-            margin-bottom: 4px;
+            font-size: 22px;
+            margin-bottom: 3px;
         }
 
         .nav-item-text {
-            font-size: 12px;
-            font-weight: 600;
+            font-size: 11px;
+            font-weight: 500;
         }
 
-        /* 选择聊天室弹窗 */
-        .modal-overlay {
+        /* 点击提示 */
+        .click-hint {
             position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0,0,0,0.6);
-            z-index: 1000;
-            display: none;
-            align-items: center;
-            justify-content: center;
-            padding-bottom: 70px;
-        }
-
-        .modal-overlay.show {
-            display: flex;
-        }
-
-        .modal {
-            background: rgba(255,255,255,0.95);
-            backdrop-filter: blur(20px);
-            border-radius: 28px;
-            padding: 30px;
-            max-width: 340px;
-            width: 90%;
+            bottom: 80px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: rgba(200, 180, 255, 0.7);
+            font-size: 13px;
+            z-index: 100;
             text-align: center;
-            box-shadow: 0 25px 80px rgba(0,0,0,0.3);
-            animation: modalIn 0.3s ease;
+            animation: pulse-hint 2s infinite ease-in-out;
         }
 
-        @keyframes modalIn {
-            from { opacity: 0; transform: scale(0.9) translateY(20px); }
-            to { opacity: 1; transform: scale(1) translateY(0); }
-        }
-
-        .modal h2 {
-            color: #3a3a6a;
-            font-size: 20px;
-            margin-bottom: 8px;
-        }
-
-        .modal p {
-            color: #6a6a9a;
-            font-size: 14px;
-            margin-bottom: 25px;
-        }
-
-        .modal-planet-name {
-            color: #6080ff;
-            font-weight: 700;
-            font-size: 24px;
-            margin-bottom: 20px;
-        }
-
-        .room-options {
-            display: flex;
-            gap: 15px;
-            margin-bottom: 15px;
-        }
-
-        .room-option {
-            flex: 1;
-            padding: 20px 15px;
-            border-radius: 20px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            border: 3px solid transparent;
-        }
-
-        .room-option:hover {
-            transform: translateY(-3px);
-        }
-
-        .room-option.flower {
-            background: linear-gradient(135deg, #fff0f5 0%, #ffe0f0 50%, #f0e0ff 100%);
-            border-color: rgba(255, 150, 200, 0.4);
-        }
-
-        .room-option.flower:hover {
-            border-color: #ff80b0;
-            box-shadow: 0 10px 30px rgba(255, 128, 176, 0.3);
-        }
-
-        .room-option.ocean {
-            background: linear-gradient(135deg, #e0f0ff 0%, #b0e0ff 50%, #90c0ff 100%);
-            border-color: rgba(100, 180, 255, 0.4);
-        }
-
-        .room-option.ocean:hover {
-            border-color: #60a0ff;
-            box-shadow: 0 10px 30px rgba(96, 160, 255, 0.3);
-        }
-
-        .room-icon {
-            font-size: 36px;
-            margin-bottom: 8px;
-        }
-
-        .room-name {
-            color: #3a3a6a;
-            font-weight: 700;
-            font-size: 15px;
-        }
-
-        .cancel-btn {
-            background: rgba(100,100,120,0.1);
-            border: none;
-            color: #6a6a8a;
-            padding: 12px 30px;
-            border-radius: 16px;
-            font-size: 14px;
-            cursor: pointer;
-            margin-top: 10px;
-            transition: all 0.3s ease;
-        }
-
-        .cancel-btn:hover {
-            background: rgba(100,100,120,0.2);
-        }
-
-        @media (max-width: 600px) {
-            .header h1 {
-                font-size: 1.3rem;
-                letter-spacing: 4px;
-            }
+        @keyframes pulse-hint {
+            0%, 100% { opacity: 0.5; }
+            50% { opacity: 1; }
         }
     </style>
 </head>
 <body>
-    <div class="space-bg" id="spaceBg"></div>
+    <div id="canvas-container"></div>
 
     <div class="header">
-        <h1>MBTI 交友大厅</h1>
+        <h1>MBTI 星球交友</h1>
     </div>
 
-    <!-- 缩放控制 -->
-    <div class="zoom-controls">
-        <button class="zoom-btn" id="zoomIn">+</button>
-        <button class="zoom-btn" id="zoomOut">−</button>
-    </div>
-
-    <div class="planets-wrapper" id="planetsWrapper">
-        <div class="planets-container" id="planetsContainer"></div>
-    </div>
+    <div class="click-hint">✨ 点击星球进入聊天室 ✨</div>
 
     <!-- 底部导航栏 -->
     <nav class="bottom-nav">
@@ -692,252 +156,276 @@
         </a>
     </nav>
 
-    <!-- 选择聊天室弹窗 -->
-    <div class="modal-overlay" id="modalOverlay">
-        <div class="modal">
-            <h2>选择聊天室</h2>
-            <p>你要进入哪个房间？</p>
-            <div class="modal-planet-name" id="modalPlanetName"></div>
-            <div class="room-options">
-                <div class="room-option flower" id="flowerOption">
-                    <div class="room-icon">🌷</div>
-                    <div class="room-name">花田聊天室</div>
-                </div>
-                <div class="room-option ocean" id="oceanOption">
-                    <div class="room-icon">🌊</div>
-                    <div class="room-name">海水聊天室</div>
-                </div>
-            </div>
-            <button class="cancel-btn" id="cancelBtn">取消</button>
-        </div>
-    </div>
-
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script>
-        const planetsData = [
-            { type: 'intj', name: 'INTJ', title: '战略家', orbitRadius: 190, orbitSpeed: 'slow', startAngle: 0 },
-            { type: 'intp', name: 'INTP', title: '逻辑家', orbitRadius: 190, orbitSpeed: 'slow', startAngle: 22.5 },
-            { type: 'entj', name: 'ENTJ', title: '统帅', orbitRadius: 150, orbitSpeed: 'medium', startAngle: 45 },
-            { type: 'entp', name: 'ENTP', title: '辩论家', orbitRadius: 150, orbitSpeed: 'medium', startAngle: 67.5 },
-            { type: 'infj', name: 'INFJ', title: '洞察者', orbitRadius: 190, orbitSpeed: 'slow', startAngle: 90 },
-            { type: 'infp', name: 'INFP', title: '理想家', orbitRadius: 190, orbitSpeed: 'slow', startAngle: 112.5 },
-            { type: 'enfj', name: 'ENFJ', title: '引导者', orbitRadius: 150, orbitSpeed: 'medium', startAngle: 135 },
-            { type: 'enfp', name: 'ENFP', title: '逐梦者', orbitRadius: 150, orbitSpeed: 'medium', startAngle: 157.5 },
-            { type: 'istj', name: 'ISTJ', title: '检查者', orbitRadius: 190, orbitSpeed: 'slow', startAngle: 180 },
-            { type: 'estj', name: 'ESTJ', title: '管理者', orbitRadius: 190, orbitSpeed: 'slow', startAngle: 202.5 },
-            { type: 'isfj', name: 'ISFJ', title: '守卫者', orbitRadius: 150, orbitSpeed: 'medium', startAngle: 225 },
-            { type: 'esfj', name: 'ESFJ', title: '执政官', orbitRadius: 150, orbitSpeed: 'medium', startAngle: 247.5 },
-            { type: 'istp', name: 'ISTP', title: '鉴赏家', orbitRadius: 190, orbitSpeed: 'slow', startAngle: 270 },
-            { type: 'isfp', name: 'ISFP', title: '探险家', orbitRadius: 190, orbitSpeed: 'slow', startAngle: 292.5 },
-            { type: 'estp', name: 'ESTP', title: '企业家', orbitRadius: 110, orbitSpeed: 'fast', startAngle: 315 },
-            { type: 'esfp', name: 'ESFP', title: '表演者', orbitRadius: 110, orbitSpeed: 'fast', startAngle: 337.5 }
+        let scene, camera, renderer;
+        let planets = [];
+        let labels = [];
+        let selectedPlanet = null;
+        let time = 0;
+
+        const planetData = [
+            { type: 'INTJ', name: '战略家', color: 0x8040d0, glowColor: 0xa060ff, orbitRadius: 16, orbitSpeed: 0.0008, rotationSpeed: 0.008, size: 1.4 },
+            { type: 'INTP', name: '逻辑家', color: 0x60a0d0, glowColor: 0x80c0ff, orbitRadius: 16, orbitSpeed: 0.0009, rotationSpeed: 0.010, size: 1.3 },
+            { type: 'ENTJ', name: '统帅', color: 0xffa020, glowColor: 0xffc040, orbitRadius: 12, orbitSpeed: 0.0012, rotationSpeed: 0.012, size: 1.5 },
+            { type: 'ENTP', name: '辩论家', color: 0x80e080, glowColor: 0xa0ffa0, orbitRadius: 12, orbitSpeed: 0.0011, rotationSpeed: 0.011, size: 1.25 },
+            { type: 'INFJ', name: '洞察者', color: 0xe080b0, glowColor: 0xffa0d0, orbitRadius: 16, orbitSpeed: 0.00085, rotationSpeed: 0.009, size: 1.35 },
+            { type: 'INFP', name: '理想家', color: 0xb080ff, glowColor: 0xc0a0ff, orbitRadius: 16, orbitSpeed: 0.00075, rotationSpeed: 0.007, size: 1.3 },
+            { type: 'ENFJ', name: '引导者', color: 0x60b0e0, glowColor: 0x80d0ff, orbitRadius: 12, orbitSpeed: 0.0010, rotationSpeed: 0.010, size: 1.4 },
+            { type: 'ENFP', name: '逐梦者', color: 0xff9050, glowColor: 0xffb070, orbitRadius: 12, orbitSpeed: 0.0013, rotationSpeed: 0.013, size: 1.45 },
+            { type: 'ISTJ', name: '检查者', color: 0x508050, glowColor: 0x70a070, orbitRadius: 16, orbitSpeed: 0.0007, rotationSpeed: 0.006, size: 1.3 },
+            { type: 'ESTJ', name: '管理者', color: 0x8050c0, glowColor: 0xa070e0, orbitRadius: 16, orbitSpeed: 0.00095, rotationSpeed: 0.0095, size: 1.35 },
+            { type: 'ISFJ', name: '守卫者', color: 0xd0c0a0, glowColor: 0xe0d0b0, orbitRadius: 12, orbitSpeed: 0.0008, rotationSpeed: 0.008, size: 1.25 },
+            { type: 'ESFJ', name: '执政官', color: 0xff90c0, glowColor: 0xffb0d0, orbitRadius: 12, orbitSpeed: 0.00115, rotationSpeed: 0.0115, size: 1.4 },
+            { type: 'ISTP', name: '鉴赏家', color: 0x808090, glowColor: 0xa0a0b0, orbitRadius: 16, orbitSpeed: 0.00088, rotationSpeed: 0.0088, size: 1.25 },
+            { type: 'ISFP', name: '探险家', color: 0x60c0a0, glowColor: 0x80e0c0, orbitRadius: 16, orbitSpeed: 0.00078, rotationSpeed: 0.0078, size: 1.2 },
+            { type: 'ESTP', name: '企业家', color: 0xff5030, glowColor: 0xff7050, orbitRadius: 8, orbitSpeed: 0.0015, rotationSpeed: 0.015, size: 1.35 },
+            { type: 'ESFP', name: '表演者', color: 0xe040a0, glowColor: 0xff60c0, orbitRadius: 8, orbitSpeed: 0.0016, rotationSpeed: 0.016, size: 1.5 }
         ];
 
-        let selectedPlanet = null;
-        let scale = 1;
-        let translateX = 0;
-        let translateY = 0;
-        let isDragging = false;
-        let startX, startY;
+        function init() {
+            const container = document.getElementById('canvas-container');
+
+            scene = new THREE.Scene();
+
+            camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
+            camera.position.set(0, 12, 30);
+            camera.lookAt(0, 0, 0);
+
+            renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+            renderer.shadowMap.enabled = true;
+            container.appendChild(renderer.domElement);
+
+            const ambientLight = new THREE.AmbientLight(0x404060, 0.5);
+            scene.add(ambientLight);
+
+            const directionalLight = new THREE.DirectionalLight(0xffffff, 1);
+            directionalLight.position.set(10, 20, 10);
+            directionalLight.castShadow = true;
+            scene.add(directionalLight);
+
+            const pointLight1 = new THREE.PointLight(0x8060ff, 0.8, 100);
+            pointLight1.position.set(-20, 10, -20);
+            scene.add(pointLight1);
+
+            const pointLight2 = new THREE.PointLight(0xff60a0, 0.6, 100);
+            pointLight2.position.set(20, 5, -10);
+            scene.add(pointLight2);
+
+            createStarfield();
+            createPlanets();
+
+            window.addEventListener('resize', onWindowResize);
+            window.addEventListener('mousemove', onMouseMove);
+            window.addEventListener('click', onClick);
+
+            animate();
+        }
+
+        function createStarfield() {
+            const starsGeometry = new THREE.BufferGeometry();
+            const starCount = 2000;
+            const positions = new Float32Array(starCount * 3);
+
+            for (let i = 0; i < starCount * 3; i += 3) {
+                positions[i] = (Math.random() - 0.5) * 200;
+                positions[i + 1] = (Math.random() - 0.5) * 200;
+                positions[i + 2] = (Math.random() - 0.5) * 200;
+            }
+
+            starsGeometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+
+            const starsMaterial = new THREE.PointsMaterial({
+                color: 0xffffff,
+                size: 0.15,
+                transparent: true,
+                opacity: 0.8
+            });
+
+            const stars = new THREE.Points(starsGeometry, starsMaterial);
+            scene.add(stars);
+        }
+
+        function createPlanetTexture(color) {
+            const canvas = document.createElement('canvas');
+            canvas.width = 512;
+            canvas.height = 256;
+            const ctx = canvas.getContext('2d');
+
+            const gradient = ctx.createLinearGradient(0, 0, 0, 256);
+            const baseColor = new THREE.Color(color);
+            const lighter = baseColor.clone().multiplyScalar(1.5);
+            const darker = baseColor.clone().multiplyScalar(0.5);
+
+            gradient.addColorStop(0, '#' + lighter.getHexString());
+            gradient.addColorStop(0.5, '#' + baseColor.getHexString());
+            gradient.addColorStop(1, '#' + darker.getHexString());
+
+            ctx.fillStyle = gradient;
+            ctx.fillRect(0, 0, 512, 256);
+
+            ctx.globalAlpha = 0.15;
+            for (let i = 0; i < 20; i++) {
+                const x = Math.random() * 512;
+                const y = Math.random() * 256;
+                const r = 20 + Math.random() * 60;
+                const patchGradient = ctx.createRadialGradient(x, y, 0, x, y, r);
+                patchGradient.addColorStop(0, 'rgba(255,255,255,0.3)');
+                patchGradient.addColorStop(1, 'rgba(0,0,0,0.1)');
+                ctx.fillStyle = patchGradient;
+                ctx.beginPath();
+                ctx.arc(x, y, r, 0, Math.PI * 2);
+                ctx.fill();
+            }
+
+            return new THREE.CanvasTexture(canvas);
+        }
+
+        function createPlanets() {
+            planetData.forEach((data, index) => {
+                const angle = (index / planetData.length) * Math.PI * 2;
+                const startAngle = angle;
+
+                const group = new THREE.Group();
+
+                const geometry = new THREE.SphereGeometry(data.size, 64, 64);
+                const material = new THREE.MeshStandardMaterial({
+                    map: createPlanetTexture(data.color),
+                    metalness: 0.3,
+                    roughness: 0.7
+                });
+
+                const planet = new THREE.Mesh(geometry, material);
+                planet.userData = { ...data, startAngle, index };
+                planet.castShadow = true;
+                group.add(planet);
+
+                const glowGeometry = new THREE.SphereGeometry(data.size * 1.2, 32, 32);
+                const glowMaterial = new THREE.MeshBasicMaterial({
+                    color: data.glowColor,
+                    transparent: true,
+                    opacity: 0.15,
+                    side: THREE.BackSide
+                });
+                const glow = new THREE.Mesh(glowGeometry, glowMaterial);
+                group.add(glow);
+
+                planets.push(group);
+                scene.add(group);
+            });
+        }
 
         function getOnlineCount() {
             try {
                 const accounts = JSON.parse(localStorage.getItem('mbtiAccounts') || '[]');
-                return accounts.length;
+                return Math.max(1, accounts.length);
             } catch (e) {
-                return 0;
+                return 1;
             }
         }
 
-        function createStars() {
-            const bg = document.getElementById('spaceBg');
-            const starCount = 200;
+        function updateLabels() {
+            labels.forEach(label => label.remove());
+            labels = [];
 
-            for (let i = 0; i < starCount; i++) {
-                const star = document.createElement('div');
-                star.className = 'star';
-                star.style.left = Math.random() * 100 + 'vw';
-                star.style.top = Math.random() * 100 + 'vh';
-                star.style.width = (Math.random() * 2.5 + 0.5) + 'px';
-                star.style.height = star.style.width;
-                star.style.animationDelay = Math.random() * 3 + 's';
-                star.style.animationDuration = (Math.random() * 3 + 2) + 's';
-                bg.appendChild(star);
-            }
-        }
+            planets.forEach((group, index) => {
+                const planet = group.children[0];
+                const data = planet.userData;
 
-        function createOrbits(container) {
-            const orbits = [110, 150, 190];
-            orbits.forEach(radius => {
-                const orbit = document.createElement('div');
-                orbit.className = 'orbit';
-                orbit.style.width = (radius * 2) + 'px';
-                orbit.style.height = (radius * 2) + 'px';
-                container.appendChild(orbit);
+                const vector = new THREE.Vector3();
+                planet.getWorldPosition(vector);
+                vector.project(camera);
+
+                if (vector.z < 1) {
+                    const x = (vector.x * 0.5 + 0.5) * window.innerWidth;
+                    const y = (-vector.y * 0.5 + 0.5) * window.innerHeight;
+
+                    const label = document.createElement('div');
+                    label.style.cssText = `
+                        position: fixed;
+                        left: ${x}px;
+                        top: ${y - 60}px;
+                        transform: translateX(-50%);
+                        background: rgba(20, 10, 40, 0.85);
+                        backdrop-filter: blur(10px);
+                        padding: 8px 14px;
+                        border-radius: 12px;
+                        border: 1px solid rgba(150, 120, 200, 0.4);
+                        color: white;
+                        font-size: 12px;
+                        text-align: center;
+                        pointer-events: none;
+                        z-index: 100;
+                        white-space: nowrap;
+                    `;
+                    const onlineCount = getOnlineCount();
+                    label.innerHTML = `
+                        <div style="font-weight: bold; font-size: 14px; color: #c0a0ff;">${data.type}</div>
+                        <div style="font-size: 11px; color: #aaa; margin: 2px 0;">${data.name}</div>
+                        <div style="font-size: 11px; color: #80ff80;">在线 ${onlineCount} 人</div>
+                    `;
+                    document.body.appendChild(label);
+                    labels.push(label);
+                }
             });
         }
 
-        function createPlanets() {
-            const container = document.getElementById('planetsContainer');
+        function onWindowResize() {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        }
 
-            createOrbits(container);
+        let mouseX = 0, mouseY = 0;
 
-            planetsData.forEach((planet, index) => {
-                const wrapper = document.createElement('div');
-                wrapper.className = 'planet-wrapper';
-                wrapper.style.width = '0px';
-                wrapper.style.height = '0px';
+        function onMouseMove(e) {
+            mouseX = (e.clientX / window.innerWidth) * 2 - 1;
+            mouseY = -(e.clientY / window.innerHeight) * 2 + 1;
+        }
 
-                const orbitDuration = planet.orbitSpeed === 'fast' ? 45 : planet.orbitSpeed === 'medium' ? 70 : 100;
-                const orbitDelay = -(orbitDuration * (planet.startAngle / 360)) + 's';
-                wrapper.style.animation = `orbit-${planet.orbitSpeed} ${orbitDuration}s infinite linear`;
-                wrapper.style.animationDelay = orbitDelay;
+        function onClick(e) {
+            const raycaster = new THREE.Raycaster();
+            raycaster.setFromCamera(new THREE.Vector2(mouseX, mouseY), camera);
 
-                const planetEl = document.createElement('div');
-                planetEl.className = `planet ${planet.type}`;
+            const planetMeshes = planets.map(group => group.children[0]);
+            const intersects = raycaster.intersectObjects(planetMeshes);
 
-                const angleRad = (planet.startAngle * Math.PI) / 180;
-                const x = Math.cos(angleRad) * planet.orbitRadius;
-                const y = Math.sin(angleRad) * planet.orbitRadius;
+            if (intersects.length > 0) {
+                const planet = intersects[0].object;
+                const data = planet.userData;
+                window.location.href = `chat-ocean.html?mbti=${data.type}`;
+            }
+        }
 
-                planetEl.style.transform = `translate(${x}px, ${y}px) translate(-50%, -50%)`;
+        function animate() {
+            requestAnimationFrame(animate);
+            time += 0.01;
 
-                const planet3d = document.createElement('div');
-                planet3d.className = 'planet-3d';
-                planetEl.appendChild(planet3d);
+            planets.forEach((group, index) => {
+                const planet = group.children[0];
+                const data = planet.userData;
 
-                const label = document.createElement('div');
-                label.className = 'planet-label';
-                const onlineCount = getOnlineCount();
-                label.textContent = `${planet.name} | ${planet.title}`;
-                planetEl.appendChild(label);
+                const angle = data.startAngle + time * data.orbitSpeed * 10;
+                const x = Math.cos(angle) * data.orbitRadius;
+                const z = Math.sin(angle) * data.orbitRadius;
+                const y = Math.sin(time * 0.5 + index) * 0.5;
 
-                planetEl.addEventListener('click', () => {
-                    openModal(planet);
-                });
+                group.position.set(x, y, z);
 
-                wrapper.appendChild(planetEl);
-                container.appendChild(wrapper);
+                planet.rotation.y += data.rotationSpeed;
             });
+
+            camera.position.x = mouseX * 2;
+            camera.position.y = 12 + mouseY * 2;
+            camera.lookAt(0, 0, 0);
+
+            updateLabels();
+            renderer.render(scene, camera);
         }
 
-        function updateTransform() {
-            const container = document.getElementById('planetsContainer');
-            container.style.transform = `scale(${scale}) translate(${translateX}px, ${translateY}px)`;
-        }
-
-        function zoomIn() {
-            scale = Math.min(2.5, scale + 0.2);
-            updateTransform();
-        }
-
-        function zoomOut() {
-            scale = Math.max(0.5, scale - 0.2);
-            updateTransform();
-        }
-
-        const wrapper = document.getElementById('planetsWrapper');
-
-        wrapper.addEventListener('mousedown', (e) => {
-            isDragging = true;
-            startX = e.clientX - translateX;
-            startY = e.clientY - translateY;
-            wrapper.style.cursor = 'grabbing';
-        });
-
-        window.addEventListener('mousemove', (e) => {
-            if (!isDragging) return;
-            translateX = e.clientX - startX;
-            translateY = e.clientY - startY;
-            updateTransform();
-        });
-
-        window.addEventListener('mouseup', () => {
-            isDragging = false;
-            wrapper.style.cursor = 'grab';
-        });
-
-        wrapper.addEventListener('wheel', (e) => {
-            e.preventDefault();
-            const delta = e.deltaY > 0 ? -0.1 : 0.1;
-            scale = Math.max(0.5, Math.min(2.5, scale + delta));
-            updateTransform();
-        });
-
-        let touchStartDist = 0;
-        let touchStartScale = 1;
-
-        wrapper.addEventListener('touchstart', (e) => {
-            if (e.touches.length === 1) {
-                isDragging = true;
-                startX = e.touches[0].clientX - translateX;
-                startY = e.touches[0].clientY - translateY;
-            } else if (e.touches.length === 2) {
-                touchStartDist = Math.hypot(
-                    e.touches[0].clientX - e.touches[1].clientX,
-                    e.touches[0].clientY - e.touches[1].clientY
-                );
-                touchStartScale = scale;
-            }
-        });
-
-        wrapper.addEventListener('touchmove', (e) => {
-            e.preventDefault();
-            if (e.touches.length === 1 && isDragging) {
-                translateX = e.touches[0].clientX - startX;
-                translateY = e.touches[0].clientY - startY;
-                updateTransform();
-            } else if (e.touches.length === 2) {
-                const dist = Math.hypot(
-                    e.touches[0].clientX - e.touches[1].clientX,
-                    e.touches[0].clientY - e.touches[1].clientY
-                );
-                scale = Math.max(0.5, Math.min(2.5, touchStartScale * (dist / touchStartDist)));
-                updateTransform();
-            }
-        });
-
-        wrapper.addEventListener('touchend', () => {
-            isDragging = false;
-        });
-
-        document.getElementById('zoomIn').addEventListener('click', zoomIn);
-        document.getElementById('zoomOut').addEventListener('click', zoomOut);
-        wrapper.style.cursor = 'grab';
-
-        function openModal(planet) {
-            selectedPlanet = planet;
-            document.getElementById('modalPlanetName').textContent = planet.name + ' ' + planet.title;
-            document.getElementById('modalOverlay').classList.add('show');
-        }
-
-        function closeModal() {
-            selectedPlanet = null;
-            document.getElementById('modalOverlay').classList.remove('show');
-        }
-
-        function enterChat(roomType) {
-            if (!selectedPlanet) return;
-            const mbti = selectedPlanet.name.toUpperCase();
-            if (roomType === 'flower') {
-                window.location.href = `chat-flower.html?mbti=${mbti}`;
-            } else {
-                window.location.href = `chat-ocean.html?mbti=${mbti}`;
-            }
-        }
-
-        document.getElementById('flowerOption').addEventListener('click', () => enterChat('flower'));
-        document.getElementById('oceanOption').addEventListener('click', () => enterChat('ocean'));
-        document.getElementById('cancelBtn').addEventListener('click', closeModal);
-        document.getElementById('modalOverlay').addEventListener('click', (e) => {
-            if (e.target === document.getElementById('modalOverlay')) {
-                closeModal();
-            }
-        });
-
-        document.addEventListener('DOMContentLoaded', () => {
-            createStars();
-            createPlanets();
-        });
+        init();
     </script>
 </body>
 </html>

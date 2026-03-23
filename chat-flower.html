@@ -2,605 +2,339 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>MBTI 郁金香花田聊天大厅</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MBTI 花田聊天室</title>
     <style>
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            -webkit-tap-highlight-color: transparent;
         }
 
         html, body {
             width: 100%;
-            overflow-x: hidden;
-        }
-
-        body {
+            height: 100%;
             overflow: hidden;
             font-family: 'Microsoft YaHei', 'PingFang SC', sans-serif;
         }
 
-        #canvas-container {
+        body {
+            background: linear-gradient(180deg, #87CEEB 0%, #98D8E8 30%, #B8E8C8 60%, #78C880 100%);
+        }
+
+        /* 花田背景 */
+        .flower-bg {
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
             z-index: 0;
+            overflow: hidden;
         }
 
-        .ui-layer {
+        .sky-cloud {
+            position: absolute;
+            background: rgba(255,255,255,0.8);
+            border-radius: 50%;
+            filter: blur(2px);
+            animation: float-cloud 60s linear infinite;
+        }
+
+        @keyframes float-cloud {
+            0% { transform: translateX(-200px); }
+            100% { transform: translateX(calc(100vw + 200px)); }
+        }
+
+        .flower {
+            position: absolute;
+            bottom: 50px;
+            font-size: 40px;
+            animation: sway 4s ease-in-out infinite;
+        }
+
+        @keyframes sway {
+            0%, 100% { transform: rotate(-5deg); }
+            50% { transform: rotate(5deg); }
+        }
+
+        /* 云朵消息容器 */
+        .clouds-container {
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
-            height: 100%;
-            z-index: 10;
+            height: calc(100% - 140px);
+            z-index: 5;
             pointer-events: none;
         }
 
-        .back-btn {
+        .message-cloud {
+            position: absolute;
+            pointer-events: none;
+            animation: float-up linear infinite;
+        }
+
+        @keyframes float-up {
+            0% { transform: translateY(0); opacity: 1; }
+            100% { transform: translateY(-80vh); opacity: 1; }
+        }
+
+        .cloud-shape {
+            position: relative;
+            background: white;
+            border-radius: 50px;
+            padding: 15px 20px;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.1), 0 0 0 4px rgba(255,255,255,0.8);
+            max-width: 280px;
+        }
+
+        .cloud-shape::before,
+        .cloud-shape::after {
+            content: '';
+            position: absolute;
+            background: white;
+            border-radius: 50%;
+        }
+
+        .cloud-shape::before {
+            width: 40px;
+            height: 40px;
+            top: -20px;
+            left: 20px;
+        }
+
+        .cloud-shape::after {
+            width: 30px;
+            height: 30px;
+            top: -15px;
+            right: 25px;
+        }
+
+        .cloud-name {
+            font-size: 12px;
+            font-weight: 600;
+            color: #8080a0;
+            margin-bottom: 5px;
+        }
+
+        .cloud-text {
+            font-size: 14px;
+            color: #404060;
+            line-height: 1.4;
+            word-break: break-word;
+        }
+
+        /* 顶部栏 */
+        .top-bar {
             position: fixed;
-            top: 25px;
-            left: 25px;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 60px;
+            background: linear-gradient(180deg, rgba(255,255,255,0.9), rgba(255,255,255,0.7));
+            backdrop-filter: blur(15px);
+            display: flex;
+            align-items: center;
+            padding: 0 20px;
             z-index: 100;
-            pointer-events: auto;
-            background: rgba(255,255,255,0.2);
-            backdrop-filter: blur(12px);
-            border: 1px solid rgba(255,255,255,0.3);
-            color: #333;
-            padding: 12px 24px;
-            border-radius: 20px;
-            font-size: 15px;
+        }
+
+        .back-btn {
+            background: rgba(100,180,100,0.15);
+            border: 1px solid rgba(100,180,100,0.3);
+            color: #408040;
+            padding: 8px 16px;
+            border-radius: 18px;
+            font-size: 14px;
             cursor: pointer;
             transition: all 0.3s ease;
         }
 
         .back-btn:hover {
-            background: rgba(255,255,255,0.35);
-            transform: scale(1.05);
+            background: rgba(100,180,100,0.25);
+        }
+
+        .room-info {
+            flex: 1;
+            text-align: center;
+            color: #406040;
         }
 
         .room-title {
-            position: fixed;
-            top: 20px;
-            left: 50%;
-            transform: translateX(-50%);
-            text-align: center;
-            z-index: 100;
-            pointer-events: none;
-        }
-
-        .room-title h1 {
-            color: #2a5a2a;
-            font-size: 26px;
-            letter-spacing: 6px;
-            text-shadow: 0 2px 10px rgba(255,255,255,0.8);
-        }
-
-        .room-title p {
-            color: #4a7a4a;
-            font-size: 13px;
-            margin-top: 5px;
-        }
-
-        .online-count {
-            position: fixed;
-            top: 28px;
-            right: 30px;
-            z-index: 100;
-            pointer-events: auto;
-            background: rgba(255,255,255,0.85);
-            backdrop-filter: blur(10px);
-            padding: 10px 18px;
-            border-radius: 16px;
-            font-size: 13px;
-            color: #3a6a3a;
+            font-size: 18px;
             font-weight: 600;
         }
 
-        /* 右下角浮动按钮 */
-        .floating-menu-btn {
-            position: fixed;
-            bottom: 100px;
-            right: 20px;
-            width: 56px;
-            height: 56px;
-            border-radius: 50%;
-            background: linear-gradient(135deg, #60c060 0%, #40a040 100%);
-            border: none;
-            color: white;
-            font-size: 24px;
-            cursor: pointer;
-            z-index: 200;
-            box-shadow: 0 8px 30px rgba(80,180,80,0.5);
-            transition: all 0.3s ease;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .floating-menu-btn:hover {
-            transform: scale(1.1);
-            box-shadow: 0 12px 40px rgba(80,180,80,0.6);
-        }
-
-        .floating-menu-btn.active {
-            transform: rotate(45deg);
-            background: linear-gradient(135deg, #ff8080 0%, #e06060 100%);
-        }
-
-        /* 展开的控制面板 */
-        .expanded-panel {
-            position: fixed;
-            bottom: 170px;
-            right: 20px;
-            z-index: 190;
-            pointer-events: auto;
-            background: rgba(255,255,255,0.92);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            border: 1px solid rgba(255,255,255,0.6);
-            border-radius: 24px;
-            padding: 20px;
-            width: 260px;
-            max-height: 70vh;
-            overflow-y: auto;
-            box-shadow: 0 15px 50px rgba(0,50,0,0.25);
-            display: none;
-            animation: slideUp 0.3s ease;
-        }
-
-        .expanded-panel.show {
-            display: block;
-        }
-
-        @keyframes slideUp {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        .panel-section {
-            margin-bottom: 20px;
-            padding-bottom: 15px;
-            border-bottom: 1px solid rgba(100,180,100,0.15);
-        }
-
-        .panel-section:last-child {
-            margin-bottom: 0;
-            padding-bottom: 0;
-            border-bottom: none;
-        }
-
-        .panel-section h3 {
-            color: #3a6a3a;
-            font-size: 14px;
-            margin-bottom: 14px;
-            text-align: center;
-            font-weight: 700;
-        }
-
-        /* 形态选择 - 网格布局 */
-        .form-options-grid {
-            display: grid;
-            grid-template-columns: repeat(5, 1fr);
-            gap: 8px;
-        }
-
-        .form-option-grid {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 4px;
-            padding: 10px 6px;
-            border-radius: 12px;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            background: rgba(100,180,100,0.08);
-        }
-
-        .form-option-grid:hover {
-            background: rgba(100,180,100,0.18);
-            transform: scale(1.05);
-        }
-
-        .form-option-grid.selected {
-            background: rgba(100,200,100,0.3);
-            box-shadow: 0 0 12px rgba(100,200,100,0.3);
-        }
-
-        .form-option-grid .form-icon {
-            font-size: 22px;
-        }
-
-        .form-option-grid .form-name {
-            color: #3a6a3a;
-            font-size: 10px;
-            font-weight: 600;
-        }
-
-        /* 控制组 */
-        .control-group {
-            margin-bottom: 14px;
-        }
-
-        .control-group:last-child {
-            margin-bottom: 0;
-        }
-
-        .control-group label {
-            display: block;
-            color: #5a7a5a;
+        .room-subtitle {
             font-size: 12px;
-            margin-bottom: 6px;
-            font-weight: 600;
+            opacity: 0.7;
+            margin-top: 2px;
         }
 
-        .control-group input[type="range"] {
-            width: 100%;
-            cursor: pointer;
-        }
-
-        .control-value {
-            text-align: right;
-            color: #4a8a4a;
-            font-size: 11px;
-            margin-top: 4px;
-        }
-
-        .chat-area {
-            position: fixed;
-            bottom: 120px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 480px;
-            max-height: 280px;
-            overflow-y: auto;
-            z-index: 200;
-            pointer-events: auto;
-            background: rgba(255,255,255,0.5);
-            border-radius: 20px;
-            padding: 10px;
-        }
-
-        .chat-area::-webkit-scrollbar {
-            width: 6px;
-        }
-
-        .chat-area::-webkit-scrollbar-track {
-            background: rgba(255,255,255,0.3);
-            border-radius: 3px;
-        }
-
-        .chat-area::-webkit-scrollbar-thumb {
-            background: rgba(100,180,100,0.5);
-            border-radius: 3px;
-        }
-
-        .message {
-            display: flex;
-            align-items: flex-start;
-            gap: 12px;
-            margin-bottom: 15px;
-            padding: 14px 18px;
-            background: rgba(255,255,255,0.9);
-            backdrop-filter: blur(10px);
-            border-radius: 20px;
-            border: 1px solid rgba(255,255,255,0.6);
-            box-shadow: 0 5px 20px rgba(0,80,0,0.12);
-            animation: msgIn 0.3s ease;
-        }
-
-        @keyframes msgIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        .message.self {
-            background: rgba(100,200,100,0.15);
-            border-color: rgba(100,200,100,0.3);
-        }
-
-        .message-avatar {
-            font-size: 28px;
-        }
-
-        .message-content {
-            flex: 1;
-        }
-
-        .message-name {
-            color: #3a7a3a;
-            font-size: 13px;
-            font-weight: 700;
-            margin-bottom: 4px;
-        }
-
-        .message-text {
-            color: #444;
-            font-size: 14px;
-            line-height: 1.5;
-        }
-
+        /* 输入区域 */
         .input-area {
             position: fixed;
-            bottom: 30px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 520px;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 80px;
+            background: linear-gradient(0deg, rgba(255,255,255,0.98), rgba(255,255,255,0.9));
+            backdrop-filter: blur(15px);
             display: flex;
-            gap: 12px;
+            align-items: center;
+            padding: 15px 20px;
+            padding-bottom: calc(15px + env(safe-area-inset-bottom));
             z-index: 100;
-            pointer-events: auto;
         }
 
         .input-area input {
             flex: 1;
-            padding: 16px 24px;
-            border: none;
-            border-radius: 25px;
-            background: rgba(255,255,255,0.9);
-            color: #333;
+            height: 45px;
+            background: rgba(100,180,100,0.1);
+            border: 1px solid rgba(100,180,100,0.25);
+            border-radius: 22px;
+            padding: 0 20px;
+            color: #406040;
             font-size: 15px;
             outline: none;
-            box-shadow: 0 5px 20px rgba(0,80,0,0.15);
+            transition: all 0.3s ease;
         }
 
         .input-area input::placeholder {
-            color: #aaa;
+            color: rgba(80,120,80,0.4);
+        }
+
+        .input-area input:focus {
+            background: rgba(100,180,100,0.15);
+            border-color: rgba(100,180,100,0.4);
         }
 
         .send-btn {
-            padding: 16px 28px;
+            margin-left: 12px;
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #80d080, #60c0a0);
             border: none;
-            border-radius: 25px;
-            background: linear-gradient(135deg, #60c060 0%, #40a040 100%);
             color: white;
-            font-size: 15px;
-            font-weight: 600;
+            font-size: 18px;
             cursor: pointer;
             transition: all 0.3s ease;
-            box-shadow: 0 5px 20px rgba(80,180,80,0.4);
         }
 
         .send-btn:hover {
-            transform: scale(1.05);
-            box-shadow: 0 8px 30px rgba(80,180,80,0.5);
+            transform: scale(1.1);
         }
 
-        .zoom-hint {
+        /* 底部导航栏 */
+        .bottom-nav {
             position: fixed;
-            bottom: 95px;
-            right: 30px;
-            color: rgba(60,100,60,0.7);
-            font-size: 12px;
-            z-index: 100;
-            pointer-events: none;
-            text-align: right;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 60px;
+            background: rgba(255,255,255,0.95);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-top: 1px solid rgba(100,150,100,0.2);
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            z-index: 200;
+            padding-bottom: env(safe-area-inset-bottom);
         }
 
-        /* 手机端响应式 */
-        @media (max-width: 600px) {
-            .chat-area {
-                width: 92% !important;
-                max-height: 180px !important;
-                bottom: 100px !important;
-                z-index: 150 !important;
-            }
+        .nav-item {
+            flex: 1;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            color: #8a9a8a;
+            position: relative;
+        }
 
-            .input-area {
-                width: 92% !important;
-                bottom: 15px !important;
-            }
+        .nav-item:hover {
+            background: rgba(100,180,100,0.1);
+        }
 
-            .input-area input {
-                padding: 12px 18px !important;
-                font-size: 14px !important;
-            }
+        .nav-item.active {
+            color: #60a060;
+        }
 
-            .send-btn {
-                padding: 12px 20px !important;
-                font-size: 14px !important;
-            }
+        .nav-item-icon {
+            font-size: 22px;
+            margin-bottom: 3px;
+        }
 
-            .message {
-                padding: 10px 14px !important;
-                gap: 8px !important;
-                margin-bottom: 10px !important;
-            }
-
-            .message-avatar {
-                font-size: 22px !important;
-            }
-
-            .message-name {
-                font-size: 12px !important;
-            }
-
-            .message-text {
-                font-size: 13px !important;
-            }
-
-            .floating-menu-btn {
-                bottom: 90px !important;
-                right: 12px !important;
-                width: 48px !important;
-                height: 48px !important;
-                font-size: 20px !important;
-            }
-
-            .expanded-panel {
-                bottom: 150px !important;
-                right: 12px !important;
-                width: 85% !important;
-                max-width: 280px !important;
-                max-height: 55vh !important;
-            }
-
-            .room-title h1 {
-                font-size: 18px !important;
-            }
-
-            .room-title p {
-                font-size: 11px !important;
-            }
-
-            .back-btn {
-                padding: 8px 16px !important;
-                font-size: 13px !important;
-            }
-
-            .online-count {
-                font-size: 12px !important;
-                top: 75px !important;
-                right: 12px !important;
-            }
+        .nav-item-text {
+            font-size: 11px;
+            font-weight: 500;
         }
     </style>
 </head>
 <body>
-    <div id="canvas-container"></div>
-    <div class="ui-layer">
-        <div style="position:fixed;top:25px;left:25px;z-index:100;pointer-events:auto;display:flex;gap:10px;">
-            <button class="back-btn" onclick="goBack()" style="position:relative;top:0;left:0;">← 返回星球大厅</button>
-            <button class="back-btn" onclick="switchRoom()" style="position:relative;top:0;left:0;background:rgba(0,150,255,0.3);">🌊 切换海水聊天室</button>
+    <div class="flower-bg" id="flowerBg"></div>
+    <div class="clouds-container" id="cloudsContainer"></div>
+
+    <div class="top-bar">
+        <button class="back-btn" onclick="goBack()">← 返回</button>
+        <div class="room-info">
+            <div class="room-title" id="roomTitle">🌷 花田聊天室</div>
+            <div class="room-subtitle" id="roomSubtitle">云朵消息聊天室</div>
         </div>
-
-        <div class="online-count" id="onlineCount">👥 在线: 1</div>
-
-        <div class="room-title">
-            <h1 id="roomTitle">🌷 INFP 郁金香花田</h1>
-            <p id="roomSubtitle">在浪漫的花田里与同频的人聊天</p>
-        </div>
-
-        <!-- 右下角浮动按钮 -->
-        <button class="floating-menu-btn" id="menuBtn" onclick="toggleMenu()">⚙️</button>
-
-        <!-- 展开的控制面板 -->
-        <div class="expanded-panel" id="expandedPanel">
-            <div class="panel-section">
-                <h3>🦋 选择你的形态</h3>
-                <div class="form-options-grid">
-                    <div class="form-option-grid selected" data-form="butterfly" onclick="selectForm('butterfly')">
-                        <span class="form-icon">🦋</span>
-                        <span class="form-name">蝴蝶</span>
-                    </div>
-                    <div class="form-option-grid" data-form="bee" onclick="selectForm('bee')">
-                        <span class="form-icon">🐝</span>
-                        <span class="form-name">蜜蜂</span>
-                    </div>
-                    <div class="form-option-grid" data-form="ladybug" onclick="selectForm('ladybug')">
-                        <span class="form-icon">🐞</span>
-                        <span class="form-name">瓢虫</span>
-                    </div>
-                    <div class="form-option-grid" data-form="dragonfly" onclick="selectForm('dragonfly')">
-                        <span class="form-icon">🪰</span>
-                        <span class="form-name">蜻蜓</span>
-                    </div>
-                    <div class="form-option-grid" data-form="beetle" onclick="selectForm('beetle')">
-                        <span class="form-icon">🪲</span>
-                        <span class="form-name">甲虫</span>
-                    </div>
-                    <div class="form-option-grid" data-form="ant" onclick="selectForm('ant')">
-                        <span class="form-icon">🐜</span>
-                        <span class="form-name">蚂蚁</span>
-                    </div>
-                    <div class="form-option-grid" data-form="spider" onclick="selectForm('spider')">
-                        <span class="form-icon">🕷️</span>
-                        <span class="form-name">蜘蛛</span>
-                    </div>
-                    <div class="form-option-grid" data-form="firefly" onclick="selectForm('firefly')">
-                        <span class="form-icon">✨</span>
-                        <span class="form-name">萤火虫</span>
-                    </div>
-                    <div class="form-option-grid" data-form="dewdrop" onclick="selectForm('dewdrop')">
-                        <span class="form-icon">💧</span>
-                        <span class="form-name">露水</span>
-                    </div>
-                    <div class="form-option-grid" data-form="pollen" onclick="selectForm('pollen')">
-                        <span class="form-icon">🌸</span>
-                        <span class="form-name">花粉</span>
-                    </div>
-                </div>
-            </div>
-
-            <div class="panel-section">
-                <h3>📐 缩放控制</h3>
-                <div class="control-group">
-                    <label>🌷 花朵大小</label>
-                    <input type="range" id="flowerScale" min="0.3" max="3" step="0.1" value="1" oninput="updateFlowerScale(this.value)">
-                    <div class="control-value" id="flowerScaleValue">100%</div>
-                </div>
-                <div class="control-group">
-                    <label>🐛 玩家大小</label>
-                    <input type="range" id="playerScale" min="0.05" max="3" step="0.05" value="1" oninput="updatePlayerScale(this.value)">
-                    <div class="control-value" id="playerScaleValue">100%</div>
-                </div>
-                <div class="control-group">
-                    <label>🔍 视野缩放</label>
-                    <input type="range" id="cameraZoom" min="0.5" max="3" step="0.1" value="1" oninput="updateCameraZoom(this.value)">
-                    <div class="control-value" id="cameraZoomValue">100%</div>
-                </div>
-            </div>
-        </div>
-
-        <div class="zoom-hint">
-            <p>🖱️ 滚轮/双指缩放 · 拖动移动</p>
-        </div>
-
-        <div class="chat-area" id="chatArea"></div>
-
-        <div class="input-area">
-            <input type="text" id="messageInput" placeholder="在花田里说点什么吧~ 🌷" onkeypress="handleKeyPress(event)">
-            <button class="send-btn" onclick="sendMessage()">发送</button>
-        </div>
+        <div style="width: 80px;"></div>
     </div>
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-    <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+    <div class="input-area">
+        <input type="text" id="messageInput" placeholder="在花田里说点什么吧~ 🌷" onkeypress="handleKeyPress(event)">
+        <button class="send-btn" onclick="sendMessage()">→</button>
+    </div>
+
+    <!-- 底部导航栏 -->
+    <nav class="bottom-nav">
+        <a href="home.html" class="nav-item">
+            <span class="nav-item-icon">🌍</span>
+            <span class="nav-item-text">星球大厅</span>
+        </a>
+        <a href="friend.html" class="nav-item">
+            <span class="nav-item-icon">👥</span>
+            <span class="nav-item-text">交友云</span>
+        </a>
+        <a href="profile.html" class="nav-item">
+            <span class="nav-item-icon">👤</span>
+            <span class="nav-item-text">个人中心</span>
+        </a>
+    </nav>
+
     <script>
-        let scene, camera, renderer;
-        let tulips = [], players = [], messageClouds = [];
-        let selectedForm = 'butterfly';
-        let flowerScale = 1, playerScale = 1, cameraZoom = 1;
-        let cameraOffsetX = 0, cameraOffsetZ = 0;
-        let isDragging = false, isPinching = false;
-        let lastMouseX = 0, lastMouseY = 0;
-        let initialPinchDistance = 0, initialCameraZoom = 1;
-        let socket, currentUser;
-        let messages = [];
+        let currentUser = null;
         let currentRoomMbti = '';
+        let messages = [];
 
-        const formIcons = {
-            butterfly: '🦋',
-            bee: '🐝',
-            ladybug: '🐞',
-            dragonfly: '🪰',
-            beetle: '🪲',
-            ant: '🐜',
-            spider: '🕷️',
-            firefly: '✨',
-            dewdrop: '💧',
-            pollen: '🌸'
+        const mbtiData = {
+            INTJ: { name: '战略家', desc: '高冷智慧的战略家们在花田相聚' },
+            INTP: { name: '逻辑家', desc: '脑洞大开的思考者们在花田相聚' },
+            ENTJ: { name: '统帅', desc: '气场全开的领导者们在花田相聚' },
+            ENTP: { name: '辩论家', desc: '脑洞无限的辩论家们在花田相聚' },
+            INFJ: { name: '洞察者', desc: '温柔治愈的洞察者们在花田相聚' },
+            INFP: { name: '理想家', desc: '浪漫敏感的理想主义者们在花田相聚' },
+            ENFJ: { name: '引导者', desc: '温暖包容的引导者们在花田相聚' },
+            ENFP: { name: '逐梦者', desc: '热情活泼的逐梦者们在花田相聚' },
+            ISTJ: { name: '检查者', desc: '严谨可靠的秩序者们在花田相聚' },
+            ISFJ: { name: '守卫者', desc: '温暖贴心的守护者们在花田相聚' },
+            ESTJ: { name: '管理者', desc: '规则至上的管理者们在花田相聚' },
+            ESFJ: { name: '执政官', desc: '暖心社交的执政官们在花田相聚' },
+            ISTP: { name: '鉴赏家', desc: '酷感实干的工匠们在花田相聚' },
+            ISFP: { name: '探险家', desc: '温柔审美的艺术家们在花田相聚' },
+            ESTP: { name: '企业家', desc: '热血行动的冒险家们在花田相聚' },
+            ESFP: { name: '表演者', desc: '派对中心的表演者们在花田相聚' }
         };
-
-        const playerNames = ['花蝶精灵', '蜜蜂嗡嗡', '瓢虫点点', '蜻蜓飞飞', '甲虫壮壮', '蚂蚁小黑', '蜘蛛织织', '萤火闪闪', '露珠晶晶', '花粉飘飘'];
-
-        function init() {
-            initUser();
-            initSocket();
-            initThree();
-            initRoom();
-            // 初始化UI显示
-            document.getElementById('flowerScale').value = flowerScale;
-            document.getElementById('flowerScaleValue').textContent = Math.round(flowerScale * 100) + '%';
-            document.getElementById('playerScale').value = playerScale;
-            document.getElementById('playerScaleValue').textContent = Math.round(playerScale * 100) + '%';
-            document.getElementById('cameraZoom').value = cameraZoom;
-            document.getElementById('cameraZoomValue').textContent = Math.round(cameraZoom * 100) + '%';
-        }
 
         function initUser() {
             const saved = localStorage.getItem('mbtiUser');
@@ -608,678 +342,75 @@
                 try {
                     currentUser = JSON.parse(saved);
                 } catch(e) {
-                    currentUser = { id: Date.now().toString(), nickname: '小星人', mbti: 'INFP', form: 'butterfly' };
+                    currentUser = { id: Date.now().toString(), nickname: '花精灵', mbti: 'INFP', avatar: '🦋' };
                 }
             } else {
-                currentUser = { id: Date.now().toString(), nickname: '小星人', mbti: 'INFP', form: 'butterfly' };
+                currentUser = { id: Date.now().toString(), nickname: '花精灵', mbti: 'INFP', avatar: '🦋' };
             }
         }
 
-        function initSocket() {
-            if (typeof io === 'undefined') {
-                console.log('Socket.io未加载，使用本地模式');
-                initLocalUsers();
-                return;
-            }
-
-            try {
-                socket = io();
-
-                socket.on('connect', () => {
-                    console.log('已连接');
-                    socket.emit('join', currentUser);
-                });
-
-                socket.on('userJoined', (user) => {
-                    console.log(user.nickname, '加入了');
-                    addOnlineUser(user);
-                    updateOnlineCount();
-                });
-
-                socket.on('userLeft', (userId) => {
-                    console.log('用户离开了');
-                    removeOnlineUser(userId);
-                    updateOnlineCount();
-                });
-
-                socket.on('newMessage', (msg) => {
-                    addMessage(msg);
-                });
-
-                socket.on('userFormChanged', (data) => {
-                    updateUserForm(data.userId, data.form);
-                });
-
-            } catch(e) {
-                console.log('使用本地模式');
-            }
-        }
-
-        function initThree() {
-            const container = document.getElementById('canvas-container');
-            scene = new THREE.Scene();
-            camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 200);
-            camera.position.set(0, 8, 20);
-            camera.lookAt(0, 2, 0);
-
-            renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
-            renderer.setSize(window.innerWidth, window.innerHeight);
-            renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-            renderer.shadowMap.enabled = true;
-            container.appendChild(renderer.domElement);
-
-            const ambientLight = new THREE.AmbientLight(0xffffff, 0.7);
-            scene.add(ambientLight);
-
-            const directionalLight = new THREE.DirectionalLight(0xffffff, 1);
-            directionalLight.position.set(10, 20, 10);
-            directionalLight.castShadow = true;
-            scene.add(directionalLight);
-
-            createSky();
-            createClouds();
-            createTulipField();
-            createLocalPlayers();
-            createPetals();
-
-            window.addEventListener('resize', onWindowResize);
-            window.addEventListener('wheel', onWheel);
-
-            // 鼠标事件
-            window.addEventListener('mousedown', onMouseDown);
-            window.addEventListener('mousemove', onMouseMove);
-            window.addEventListener('mouseup', onMouseUp);
-            window.addEventListener('mouseleave', onMouseUp);
-
-            // 触摸事件
-            window.addEventListener('touchstart', onTouchStart, { passive: false });
-            window.addEventListener('touchmove', onTouchMove, { passive: false });
-            window.addEventListener('touchend', onTouchEnd);
-            window.addEventListener('touchcancel', onTouchEnd);
-
-            animate();
-        }
-
-        function createSky() {
-            const skyGeometry = new THREE.SphereGeometry(100, 32, 32);
-            const skyMaterial = new THREE.ShaderMaterial({
-                uniforms: {
-                    topColor: { value: new THREE.Color(0x87CEEB) },
-                    bottomColor: { value: new THREE.Color(0xe0f0ff) }
-                },
-                vertexShader: `
-                    varying vec3 vWorldPosition;
-                    void main() {
-                        vec4 worldPosition = modelMatrix * vec4(position, 1.0);
-                        vWorldPosition = worldPosition.xyz;
-                        gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
-                    }
-                `,
-                fragmentShader: `
-                    uniform vec3 topColor;
-                    uniform vec3 bottomColor;
-                    varying vec3 vWorldPosition;
-                    void main() {
-                        float h = normalize(vWorldPosition + 0.1).y;
-                        gl_FragColor = vec4(mix(bottomColor, topColor, max(h, 0.0)), 1.0);
-                    }
-                `,
-                side: THREE.BackSide
-            });
-            const sky = new THREE.Mesh(skyGeometry, skyMaterial);
-            scene.add(sky);
-        }
-
-        function createClouds() {
-            for (let i = 0; i < 12; i++) {
-                const cloudGroup = new THREE.Group();
-                const cloudCount = 4 + Math.floor(Math.random() * 4);
-                for (let j = 0; j < cloudCount; j++) {
-                    const size = 1 + Math.random() * 2;
-                    const cloudGeom = new THREE.SphereGeometry(size, 16, 16);
-                    const cloudMat = new THREE.MeshStandardMaterial({
-                        color: 0xffffff,
-                        transparent: true,
-                        opacity: 0.9,
-                        roughness: 1
-                    });
-                    const cloud = new THREE.Mesh(cloudGeom, cloudMat);
-                    cloud.position.set(
-                        (Math.random() - 0.5) * 6,
-                        Math.random() * 2,
-                        (Math.random() - 0.5) * 3
-                    );
-                    cloudGroup.add(cloud);
-                }
-
-                cloudGroup.position.set(
-                    (Math.random() - 0.5) * 60,
-                    25 + Math.random() * 10,
-                    -20 - Math.random() * 30
-                );
-                cloudGroup.userData.speed = 0.005 + Math.random() * 0.01;
-                scene.add(cloudGroup);
-            }
-        }
-
-        function createTulipField() {
-            const colors = [0xff6090, 0xff80a0, 0xffa0c0, 0xe040a0, 0xff4080, 0xff70b0, 0x9090ff, 0xa0a0ff, 0xffffff];
-            for (let i = 0; i < 80; i++) {
-                const tulip = createTulip(colors[Math.floor(Math.random() * colors.length)]);
-                const x = (Math.random() - 0.5) * 40;
-                const z = (Math.random() - 0.5) * 40;
-                tulip.position.set(x, 0, z);
-                tulip.userData.index = i;
-                tulip.userData.originalX = x;
-                tulip.userData.originalZ = z;
-                tulip.userData.swayOffset = Math.random() * Math.PI * 2;
-                tulips.push(tulip);
-                scene.add(tulip);
-            }
-            const groundGeometry = new THREE.PlaneGeometry(80, 80, 64, 64);
-            const groundMaterial = new THREE.MeshStandardMaterial({ color: 0x40a040, roughness: 0.9 });
-            const ground = new THREE.Mesh(groundGeometry, groundMaterial);
-            ground.rotation.x = -Math.PI / 2;
-            ground.position.y = -0.1;
-            ground.receiveShadow = true;
-            scene.add(ground);
-        }
-
-        function createTulip(color) {
-            const tulipGroup = new THREE.Group();
-            const stemGeometry = new THREE.CylinderGeometry(0.08, 0.12, 2.5, 12);
-            const stemMaterial = new THREE.MeshStandardMaterial({ color: 0x30a030, roughness: 0.8 });
-            const stem = new THREE.Mesh(stemGeometry, stemMaterial);
-            stem.position.y = 1.25;
-            tulipGroup.add(stem);
-            for (let i = 0; i < 2; i++) {
-                const leafGeom = new THREE.SphereGeometry(0.6, 12, 12);
-                leafGeom.scale(2, 0.3, 0.8);
-                const leafMat = new THREE.MeshStandardMaterial({ color: 0x40b040, roughness: 0.7 });
-                const leaf = new THREE.Mesh(leafGeom, leafMat);
-                leaf.position.set((i * 2 - 1) * 0.3, 0.8, (i * 2 - 1) * 0.2);
-                leaf.rotation.z = (i * 2 - 1) * 0.5;
-                tulipGroup.add(leaf);
-            }
-            const petalCount = 6;
-            for (let i = 0; i < petalCount; i++) {
-                const angle = (i / petalCount) * Math.PI * 2;
-                const petalGeom = new THREE.SphereGeometry(0.5, 16, 16);
-                petalGeom.scale(0.9, 1.5, 0.7);
-                const petalMat = new THREE.MeshStandardMaterial({ color: color, roughness: 0.6, metalness: 0.1 });
-                const petal = new THREE.Mesh(petalGeom, petalMat);
-                petal.position.set(Math.cos(angle) * 0.35, 2.8, Math.sin(angle) * 0.35);
-                petal.rotation.y = -angle;
-                petal.rotation.x = 0.3;
-                tulipGroup.add(petal);
-            }
-            const centerGeom = new THREE.SphereGeometry(0.25, 16, 16);
-            const centerMat = new THREE.MeshStandardMaterial({ color: 0xffe060, roughness: 0.5 });
-            const center = new THREE.Mesh(centerGeom, centerMat);
-            center.position.y = 2.7;
-            tulipGroup.add(center);
-            return tulipGroup;
-        }
-
-        function createLocalPlayers() {
-            // 不添加模拟玩家，只有真实用户加入时才显示
-        }
-
-        function createPlayer(form, index) {
-            const group = new THREE.Group();
-            const canvas = document.createElement('canvas');
-            canvas.width = 128;
-            canvas.height = 128;
-            const ctx = canvas.getContext('2d');
-            ctx.clearRect(0, 0, 128, 128);
-            ctx.font = 'bold 80px Arial';
-            ctx.textAlign = 'center';
-            ctx.textBaseline = 'middle';
-            const icon = formIcons[form] || '🐛';
-            ctx.fillText(icon, 64, 64);
-            const texture = new THREE.CanvasTexture(canvas);
-            const spriteMaterial = new THREE.SpriteMaterial({ map: texture, transparent: true });
-            const sprite = new THREE.Sprite(spriteMaterial);
-            const baseSize = form === 'pollen' ? 0.3 : form === 'dewdrop' ? 0.4 : 0.6;
-            sprite.scale.set(baseSize, baseSize, 1);
-            group.add(sprite);
-            return group;
-        }
-
-        function createPetals() {
-            const petalColors = [0xff80a0, 0xffa0c0, 0xffc0d0, 0xffb0b0];
-            for (let i = 0; i < 60; i++) {
-                const petalGeom = new THREE.SphereGeometry(0.15, 8, 8);
-                petalGeom.scale(1.5, 0.3, 1.2);
-                const petalMat = new THREE.MeshStandardMaterial({
-                    color: petalColors[Math.floor(Math.random() * petalColors.length)],
-                    transparent: true,
-                    opacity: 0.8,
-                    roughness: 0.7
-                });
-                const petal = new THREE.Mesh(petalGeom, petalMat);
-                petal.position.set((Math.random() - 0.5) * 45, 5 + Math.random() * 15, (Math.random() - 0.5) * 45);
-                petal.rotation.set(Math.random(), Math.random(), Math.random());
-                petal.userData.fallSpeed = 0.01 + Math.random() * 0.02;
-                petal.userData.swayOffset = Math.random() * Math.PI * 2;
-                scene.add(petal);
-            }
-        }
-
-        let time = 0;
-        function animate() {
-            requestAnimationFrame(animate);
-            time += 0.008;
-            tulips.forEach((tulip, i) => {
-                tulip.rotation.z = Math.sin(time * 1.2 + tulip.userData.swayOffset) * 0.08;
-                tulip.rotation.x = Math.sin(time * 0.8 + tulip.userData.swayOffset * 1.5) * 0.04;
-            });
-            players.forEach((player, i) => {
-                player.userData.direction += (Math.random() - 0.5) * 0.03;
-                player.position.x += Math.cos(player.userData.direction) * player.userData.speed;
-                player.position.z += Math.sin(player.userData.direction) * player.userData.speed;
-                player.position.y += Math.sin(time * 2.5 + player.userData.floatOffset) * 0.005;
-                if (player.position.x > 22) player.userData.direction = Math.PI;
-                if (player.position.x < -22) player.userData.direction = 0;
-                if (player.position.z > 22) player.userData.direction = Math.PI / 2;
-                if (player.position.z < -22) player.userData.direction = -Math.PI / 2;
-                player.rotation.y = -player.userData.direction;
-            });
-            scene.traverse((obj) => {
-                if (obj.userData && obj.userData.fallSpeed) {
-                    obj.position.y -= obj.userData.fallSpeed;
-                    obj.position.x += Math.sin(time * 0.5 + obj.userData.swayOffset) * 0.008;
-                    obj.rotation.y += 0.01;
-                    obj.rotation.z += 0.005;
-                    if (obj.position.y < 0) {
-                        obj.position.y = 15 + Math.random() * 10;
-                        obj.position.x = (Math.random() - 0.5) * 45;
-                        obj.position.z = (Math.random() - 0.5) * 45;
-                    }
-                }
-            });
-            scene.traverse((obj) => {
-                if (obj.userData && obj.userData.speed) {
-                    obj.position.x += obj.userData.speed;
-                    if (obj.position.x > 40) obj.position.x = -40;
-                }
-            });
-            messageClouds.forEach((cloud, index) => {
-                cloud.userData.wobble += 0.02;
-                cloud.position.y += cloud.userData.speed;
-                cloud.position.x += Math.sin(cloud.userData.wobble) * 0.01;
-                cloud.position.z += Math.cos(cloud.userData.wobble * 0.7) * 0.008;
-
-                if (cloud.position.y > 25) {
-                    cloud.position.y = 3;
-                }
-            });
-            renderer.render(scene, camera);
-        }
-
-        function onWindowResize() {
-            camera.aspect = window.innerWidth / window.innerHeight;
-            camera.updateProjectionMatrix();
-            renderer.setSize(window.innerWidth, window.innerHeight);
-        }
-
-        function onWheel(e) {
-            cameraZoom = Math.max(0.5, Math.min(3, cameraZoom - e.deltaY * 0.001));
-            document.getElementById('cameraZoom').value = cameraZoom;
-            document.getElementById('cameraZoomValue').textContent = Math.round(cameraZoom * 100) + '%';
-            updateCamera();
-        }
-
-        function updateCamera() {
-            camera.position.set(cameraOffsetX, 8 / cameraZoom, 20 / cameraZoom + cameraOffsetZ);
-            camera.lookAt(cameraOffsetX, 2, cameraOffsetZ);
-        }
-
-        // 计算两个触摸点之间的距离
-        function getTouchDistance(touches) {
-            const dx = touches[0].clientX - touches[1].clientX;
-            const dy = touches[0].clientY - touches[1].clientY;
-            return Math.sqrt(dx * dx + dy * dy);
-        }
-
-        // 鼠标/触摸事件处理
-        function onMouseDown(e) {
-            if (e.target.closest('.chat-area') || e.target.closest('.input-area') ||
-                e.target.closest('.top-nav') || e.target.closest('.expanded-panel') ||
-                e.target.closest('.floating-menu-btn')) {
-                return;
-            }
-            isDragging = true;
-            lastMouseX = e.clientX || (e.touches && e.touches[0].clientX);
-            lastMouseY = e.clientY || (e.touches && e.touches[0].clientY);
-        }
-
-        function onMouseMove(e) {
-            if (!isDragging || isPinching) return;
-            if (e.target.closest('.chat-area') || e.target.closest('.input-area') ||
-                e.target.closest('.top-nav') || e.target.closest('.expanded-panel') ||
-                e.target.closest('.floating-menu-btn')) {
-                return;
-            }
-
-            const clientX = e.clientX || (e.touches && e.touches[0].clientX);
-            const clientY = e.clientY || (e.touches && e.touches[0].clientY);
-
-            const deltaX = (clientX - lastMouseX) * 0.05 / cameraZoom;
-            const deltaY = (clientY - lastMouseY) * 0.05 / cameraZoom;
-
-            cameraOffsetX -= deltaX;
-            cameraOffsetZ -= deltaY;
-
-            // 限制移动范围
-            cameraOffsetX = Math.max(-30, Math.min(30, cameraOffsetX));
-            cameraOffsetZ = Math.max(-30, Math.min(30, cameraOffsetZ));
-
-            updateCamera();
-
-            lastMouseX = clientX;
-            lastMouseY = clientY;
-        }
-
-        function onMouseUp() {
-            isDragging = false;
-        }
-
-        // 触摸事件 - 双指缩放
-        function onTouchStart(e) {
-            if (e.touches.length === 2) {
-                isPinching = true;
-                isDragging = false;
-                initialPinchDistance = getTouchDistance(e.touches);
-                initialCameraZoom = cameraZoom;
-            } else if (e.touches.length === 1) {
-                onMouseDown(e);
-            }
-        }
-
-        function onTouchMove(e) {
-            if (e.touches.length === 2 && isPinching) {
-                e.preventDefault();
-                const currentDistance = getTouchDistance(e.touches);
-                const scale = currentDistance / initialPinchDistance;
-                cameraZoom = Math.max(0.5, Math.min(3, initialCameraZoom * scale));
-                updateCamera();
-                // 更新滑块显示
-                const zoomSlider = document.getElementById('cameraZoom');
-                const zoomValue = document.getElementById('cameraZoomValue');
-                if (zoomSlider) zoomSlider.value = cameraZoom;
-                if (zoomValue) zoomValue.textContent = Math.round(cameraZoom * 100) + '%';
-            } else if (e.touches.length === 1) {
-                onMouseMove(e);
-            }
-        }
-
-        function onTouchEnd(e) {
-            if (e.touches.length < 2) {
-                isPinching = false;
-            }
-            if (e.touches.length === 0) {
-                isDragging = false;
-            }
-        }
-
-        function updateFlowerScale(value) {
-            flowerScale = parseFloat(value);
-            document.getElementById('flowerScaleValue').textContent = Math.round(value * 100) + '%';
-            tulips.forEach(tulip => tulip.scale.set(flowerScale, flowerScale, flowerScale));
-        }
-
-        function updatePlayerScale(value) {
-            playerScale = parseFloat(value);
-            document.getElementById('playerScaleValue').textContent = Math.round(value * 100) + '%';
-            players.forEach(player => {
-                const base = player.userData.baseScale || 1;
-                player.scale.set(playerScale * base, playerScale * base, playerScale * base);
-            });
-        }
-
-        function updateCameraZoom(value) {
-            cameraZoom = parseFloat(value);
-            document.getElementById('cameraZoomValue').textContent = Math.round(value * 100) + '%';
-            updateCamera();
-        }
-
-        function goBack() { window.location.href = 'home.html'; }
-        function switchRoom() {
-            const mbti = getUrlParams();
-            window.location.href = `chat-ocean.html?mbti=${mbti}`;
-        }
-
-        function selectForm(form) {
-            selectedForm = form;
-            document.querySelectorAll('.form-option-grid').forEach(el => el.classList.remove('selected'));
-            document.querySelectorAll(`[data-form="${form}"]`).forEach(el => el.classList.add('selected'));
-            if (socket && currentUser) {
-                currentUser.form = form;
-                socket.emit('changeForm', { userId: currentUser.id, form: form });
-            }
-        }
-
-        function toggleMenu() {
-            const btn = document.getElementById('menuBtn');
-            const panel = document.getElementById('expandedPanel');
-            btn.classList.toggle('active');
-            panel.classList.toggle('show');
-        }
-
-        function addOnlineUser(user) {
-            if (!players.find(p => p.userData.userId === user.id)) {
-                const playerGroup = createPlayer(user.form || 'butterfly', Date.now());
-                playerGroup.position.set((Math.random() - 0.5) * 30, 1 + Math.random() * 4, (Math.random() - 0.5) * 30);
-                playerGroup.userData.userId = user.id;
-                playerGroup.userData.nickname = user.nickname;
-                playerGroup.userData.form = user.form || 'butterfly';
-                playerGroup.userData.floatOffset = Math.random() * Math.PI * 2;
-                playerGroup.userData.speed = 0.005;
-                playerGroup.userData.direction = Math.random() * Math.PI * 2;
-                players.push(playerGroup);
-                scene.add(playerGroup);
-            }
-        }
-
-        function removeOnlineUser(userId) {
-            const idx = players.findIndex(p => p.userData.userId === userId);
-            if (idx !== -1) {
-                scene.remove(players[idx]);
-                players.splice(idx, 1);
-            }
-        }
-
-        function updateUserForm(userId, form) {
-            const player = players.find(p => p.userData.userId === userId);
-            if (player) {
-                scene.remove(player);
-                removeOnlineUser(userId);
-                addOnlineUser({ id: userId, nickname: player.userData.nickname, form: form });
-            }
-        }
-
-        function updateOnlineCount() {
-            document.getElementById('onlineCount').textContent = `👥 在线: ${players.length + 1}`;
-        }
-
-        // 统计消息数
-        function incrementChatCount() {
-            if (currentUser && currentUser.account) {
-                try {
-                    const allStats = JSON.parse(localStorage.getItem('mbtiUserStats') || '{}');
-                    if (!allStats[currentUser.account]) {
-                        allStats[currentUser.account] = { friendCount: 0, chatCount: 0, onlineDays: 1 };
-                    }
-                    allStats[currentUser.account].chatCount++;
-                    localStorage.setItem('mbtiUserStats', JSON.stringify(allStats));
-                } catch (e) {}
-            }
-        }
-
-        // 获取聊天室消息存储key
         function getRoomMessagesKey() {
-            return `mbtiChatMessages_${currentRoomMbti}`;
+            return `mbtiFlowerMessages_${currentRoomMbti}`;
         }
 
-        // 保存消息到 localStorage
         function saveMessageToStorage(msg) {
             try {
                 const key = getRoomMessagesKey();
                 const allMessages = JSON.parse(localStorage.getItem(key) || '[]');
-                // 添加时间戳
                 msg.timestamp = Date.now();
                 allMessages.push(msg);
-                // 只保留最近300条消息
-                if (allMessages.length > 300) {
+                if (allMessages.length > 50) {
                     allMessages.shift();
                 }
                 localStorage.setItem(key, JSON.stringify(allMessages));
             } catch (e) {}
         }
 
-        // 从 localStorage 加载历史消息
+        function createMessageCloud(msg, isHistorical = false) {
+            const container = document.getElementById('cloudsContainer');
+            const cloud = document.createElement('div');
+            cloud.className = 'message-cloud';
+
+            const left = 10 + Math.random() * 70;
+            const duration = 25 + Math.random() * 20;
+            const delay = isHistorical ? -Math.random() * duration : 0;
+
+            cloud.style.left = left + '%';
+            cloud.style.bottom = '0px';
+            cloud.style.animationDuration = duration + 's';
+            cloud.style.animationDelay = delay + 's';
+
+            cloud.innerHTML = `
+                <div class="cloud-shape">
+                    <div class="cloud-name">${msg.avatar || '🌸'} ${msg.nickname}</div>
+                    <div class="cloud-text">${msg.text}</div>
+                </div>
+            `;
+
+            container.appendChild(cloud);
+
+            setTimeout(() => {
+                cloud.style.animation = 'none';
+                cloud.offsetHeight;
+                cloud.style.animation = `float-up ${duration}s linear infinite`;
+            }, 10);
+
+            setTimeout(() => {
+                if (cloud.parentNode) {
+                    cloud.remove();
+                }
+            }, (duration - Math.abs(delay)) * 1000);
+        }
+
         function loadMessagesFromStorage() {
             try {
                 const key = getRoomMessagesKey();
                 const allMessages = JSON.parse(localStorage.getItem(key) || '[]');
-                allMessages.forEach(msg => {
-                    renderMessage(msg, false);
-                    createMessageCloud(msg.text);
+                const recentMessages = allMessages.slice(-15);
+                recentMessages.forEach(msg => {
+                    createMessageCloud(msg, true);
                 });
-                const chatArea = document.getElementById('chatArea');
-                chatArea.scrollTop = chatArea.scrollHeight;
             } catch (e) {}
-        }
-
-        // 渲染消息到界面
-        function renderMessage(msg, saveToStorage = true) {
-            const chatArea = document.getElementById('chatArea');
-            const isSelf = msg.userId === (currentUser && currentUser.id);
-            const div = document.createElement('div');
-            div.className = 'message' + (isSelf ? ' self' : '');
-            div.innerHTML = `
-                <span class="message-avatar">${formIcons[msg.form] || '🐛'}</span>
-                <div class="message-content">
-                    <div class="message-name">${msg.nickname}</div>
-                    <div class="message-text">${msg.text}</div>
-                </div>
-            `;
-            chatArea.appendChild(div);
-            chatArea.scrollTop = chatArea.scrollHeight;
-            messages.push(msg);
-
-            // 如果是自己发的消息，增加统计并保存
-            if (isSelf) {
-                incrementChatCount();
-                if (saveToStorage) {
-                    saveMessageToStorage(msg);
-                }
-            }
-        }
-
-        function createMessageCloud(text) {
-            const cloudGroup = new THREE.Group();
-
-            const cloudCount = 3 + Math.floor(Math.random() * 3);
-            for (let j = 0; j < cloudCount; j++) {
-                const size = 0.6 + Math.random() * 0.8;
-                const cloudGeom = new THREE.SphereGeometry(size, 16, 16);
-                const cloudMat = new THREE.MeshStandardMaterial({
-                    color: 0xffffff,
-                    transparent: true,
-                    opacity: 0.95,
-                    roughness: 1
-                });
-                const cloud = new THREE.Mesh(cloudGeom, cloudMat);
-                cloud.position.set(
-                    (Math.random() - 0.5) * 2,
-                    Math.random() * 0.5,
-                    (Math.random() - 0.5) * 1
-                );
-                cloudGroup.add(cloud);
-            }
-
-            const canvas = document.createElement('canvas');
-            const ctx = canvas.getContext('2d');
-            canvas.width = 512;
-            canvas.height = 256;
-
-            ctx.fillStyle = 'rgba(255, 255, 255, 0.95)';
-            ctx.strokeStyle = 'rgba(200, 200, 220, 0.8)';
-            ctx.lineWidth = 3;
-            roundRect(ctx, 10, 10, 492, 236, 20);
-            ctx.fill();
-            ctx.stroke();
-
-            ctx.fillStyle = '#333';
-            ctx.font = 'bold 28px Microsoft YaHei, PingFang SC, sans-serif';
-            ctx.textAlign = 'center';
-            ctx.textBaseline = 'middle';
-
-            const words = text.split('');
-            let lines = [];
-            let currentLine = '';
-            let maxCharsPerLine = 15;
-
-            for (let i = 0; i < words.length; i++) {
-                if (currentLine.length >= maxCharsPerLine) {
-                    lines.push(currentLine);
-                    currentLine = words[i];
-                } else {
-                    currentLine += words[i];
-                }
-            }
-            if (currentLine) lines.push(currentLine);
-
-            const lineHeight = 40;
-            const startY = 128 - (lines.length - 1) * lineHeight / 2;
-            for (let i = 0; i < lines.length; i++) {
-                ctx.fillText(lines[i], 256, startY + i * lineHeight);
-            }
-
-            const texture = new THREE.CanvasTexture(canvas);
-            const spriteMaterial = new THREE.SpriteMaterial({
-                map: texture,
-                transparent: true
-            });
-            const sprite = new THREE.Sprite(spriteMaterial);
-            sprite.scale.set(4, 2, 1);
-            sprite.position.y = 0.5;
-            cloudGroup.add(sprite);
-
-            cloudGroup.position.set(
-                (Math.random() - 0.5) * 15,
-                5 + Math.random() * 3,
-                (Math.random() - 0.5) * 10
-            );
-            cloudGroup.userData = {
-                speed: 0.008 + Math.random() * 0.015,
-                wobble: Math.random() * Math.PI * 2,
-                originalY: 5 + Math.random() * 3
-            };
-
-            messageClouds.push(cloudGroup);
-            scene.add(cloudGroup);
-        }
-
-        function roundRect(ctx, x, y, width, height, radius) {
-            ctx.beginPath();
-            ctx.moveTo(x + radius, y);
-            ctx.lineTo(x + width - radius, y);
-            ctx.quadraticCurveTo(x + width, y, x + width, y + radius);
-            ctx.lineTo(x + width, y + height - radius);
-            ctx.quadraticCurveTo(x + width, y + height, x + width - radius, y + height);
-            ctx.lineTo(x + radius, y + height);
-            ctx.quadraticCurveTo(x, y + height, x, y + height - radius);
-            ctx.lineTo(x, y + radius);
-            ctx.quadraticCurveTo(x, y, x + radius, y);
-            ctx.closePath();
-        }
-
-        function addMessage(msg) {
-            renderMessage(msg, true);
-            createMessageCloud(msg.text);
         }
 
         function sendMessage() {
@@ -1289,57 +420,69 @@
 
             const msg = {
                 userId: currentUser && currentUser.id,
-                nickname: currentUser && currentUser.nickname || '我',
-                form: selectedForm,
+                nickname: currentUser && currentUser.nickname || '花精灵',
+                avatar: currentUser && currentUser.avatar || '🦋',
                 text: text
             };
 
-            if (socket) {
-                socket.emit('sendMessage', msg);
-            } else {
-                addMessage(msg);
-            }
-
+            createMessageCloud(msg, false);
+            saveMessageToStorage(msg);
             input.value = '';
         }
 
-        function handleKeyPress(e) { if (e.key === 'Enter') sendMessage(); }
+        function handleKeyPress(e) {
+            if (e.key === 'Enter') sendMessage();
+        }
+
+        function goBack() {
+            window.location.href = 'home.html';
+        }
 
         function getUrlParams() {
             const params = new URLSearchParams(window.location.search);
             return params.get('mbti') || 'INFP';
         }
 
+        function createBackground() {
+            const bg = document.getElementById('flowerBg');
+
+            for (let i = 0; i < 8; i++) {
+                const cloud = document.createElement('div');
+                cloud.className = 'sky-cloud';
+                cloud.style.top = (5 + Math.random() * 25) + '%';
+                cloud.style.width = (80 + Math.random() * 120) + 'px';
+                cloud.style.height = (40 + Math.random() * 40) + 'px';
+                cloud.style.animationDuration = (40 + Math.random() * 40) + 's';
+                cloud.style.animationDelay = -Math.random() * 60 + 's';
+                bg.appendChild(cloud);
+            }
+
+            const flowers = ['🌷', '🌻', '🌼', '🌸', '💐', '🌺'];
+            for (let i = 0; i < 25; i++) {
+                const flower = document.createElement('div');
+                flower.className = 'flower';
+                flower.textContent = flowers[Math.floor(Math.random() * flowers.length)];
+                flower.style.left = (i * 4 + Math.random() * 3) + '%';
+                flower.style.animationDelay = Math.random() * 2 + 's';
+                flower.style.fontSize = (30 + Math.random() * 20) + 'px';
+                bg.appendChild(flower);
+            }
+        }
+
         function initRoom() {
             const mbti = getUrlParams();
             currentRoomMbti = mbti;
-            const mbtiData = {
-                INTJ: { name: '战略家', desc: '高冷智慧的战略家们在花田相聚' },
-                INTP: { name: '逻辑家', desc: '脑洞大开的思考者们在花田相聚' },
-                ENTJ: { name: '统帅', desc: '气场全开的领导者们在花田相聚' },
-                ENTP: { name: '辩论家', desc: '脑洞无限的辩论家们在花田相聚' },
-                INFJ: { name: '洞察者', desc: '温柔治愈的洞察者们在花田相聚' },
-                INFP: { name: '理想家', desc: '浪漫敏感的理想主义者们在花田相聚' },
-                ENFJ: { name: '引导者', desc: '温暖包容的引导者们在花田相聚' },
-                ENFP: { name: '逐梦者', desc: '热情活泼的逐梦者们在花田相聚' },
-                ISTJ: { name: '检查者', desc: '严谨可靠的秩序者们在花田相聚' },
-                ISFJ: { name: '守卫者', desc: '温暖贴心的守护者们在花田相聚' },
-                ESTJ: { name: '管理者', desc: '规则至上的管理者们在花田相聚' },
-                ESFJ: { name: '执政官', desc: '暖心社交的执政官们在花田相聚' },
-                ISTP: { name: '鉴赏家', desc: '酷感实干的工匠们在花田相聚' },
-                ISFP: { name: '探险家', desc: '温柔审美的艺术家们在花田相聚' },
-                ESTP: { name: '企业家', desc: '热血行动的冒险家们在花田相聚' },
-                ESFP: { name: '表演者', desc: '派对中心的表演者们在花田相聚' }
-            };
             const data = mbtiData[mbti] || mbtiData.INFP;
-            document.getElementById('roomTitle').textContent = `🌷 ${mbti} 郁金香花田`;
+            document.getElementById('roomTitle').textContent = `🌷 ${mbti} 花田聊天室`;
             document.getElementById('roomSubtitle').textContent = data.desc;
-
-            // 加载历史消息
             loadMessagesFromStorage();
         }
 
-        init();
+        document.addEventListener('DOMContentLoaded', () => {
+            initUser();
+            createBackground();
+            initRoom();
+        });
     </script>
 </body>
 </html>
